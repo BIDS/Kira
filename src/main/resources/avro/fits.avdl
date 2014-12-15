@@ -9,6 +9,7 @@ record FitsValue {
   union { null, int } end = null;
   union { null, int } offset = null;
   union { null, int } height = null;
+  union { null, string} path = null;
 }
 
 }

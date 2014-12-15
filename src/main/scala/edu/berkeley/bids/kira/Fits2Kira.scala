@@ -40,17 +40,16 @@ import scala.annotation.tailrec
 
 object Fits2Kira extends Serializable {
   val usage = """
-    Usage: Fits2Kira [srcpath] [dstpath] [templatepath]
+    Usage: Fits2Kira [srcpath] [dstpath]
   """
   def main(args: Array[String]) {
 
-    if (args.length < 3) {
+    if (args.length < 2) {
       print(usage)
       System.exit(1)
     }
     val src = args(0).toString
     val dst = args(1).toString
-    val tmp = args(2).toString
 
     def parallelize(f: Fits,
                     metadata: FitsMetadata,
@@ -68,6 +67,7 @@ object Fits2Kira extends Serializable {
             .setStart(metadata.start)
             .setEnd(metadata.end)
             .setOffset(metadata.offset)
+            .setPath(f.path)
             .build()
         })
       }))
@@ -207,7 +207,7 @@ object Fits2Kira extends Serializable {
     val map = FitsUtils.processMeta(fitsList).toSeq.sortBy(_._1).map(kv => kv._2)
 
     // get template
-    val template = new Template(tmp)
+    //val template = new Template(tmp)
 
     // parallelize files
     val fitsRdd = buildUp(fitsList.zip(map).toIterator)
