@@ -39,7 +39,18 @@ import parquet.hadoop.metadata.CompressionCodecName
 import scala.annotation.tailrec
 
 object Fits2Kira extends Serializable {
+  val usage = """
+    Usage: Fits2Kira [srcpath] [dstpath] [templatepath]
+  """
   def main(args: Array[String]) {
+
+    if (args.length < 3) {
+      print(usage)
+      System.exit(1)
+    }
+    val src = args(0).toString
+    val dst = args(1).toString
+    val tmp = args(2).toString
 
     def parallelize(f: Fits,
                     metadata: FitsMetadata,
@@ -108,7 +119,7 @@ object Fits2Kira extends Serializable {
         ContextUtil.getConfiguration(job))
     }
 
-    val conf = new SparkConf().setAppName("SparkMadd")
+    val conf = new SparkConf().setAppName("Fits2Kira")
     if (conf.getOption("spark.master").isEmpty) {
       conf.setMaster("local[%d]".format(Runtime.getRuntime.availableProcessors()))
     }
@@ -187,20 +198,22 @@ object Fits2Kira extends Serializable {
     val job = newJob(sc)
 
     //Main program entrance
-    val flist = new File("resources/corrdir/").listFiles.filter(_.getName.endsWith(".fits"))
+    val flist = new File(src).listFiles.filter(_.getName.endsWith(".fits"))
 
     // get data and metadata
-    val fitsList = (0 until flist.length).map(i => FitsUtils.readFits(flist(i).toString)).toArray
+    //val fitsList = (0 until flist.length).map(i => FitsUtils.readFits(flist(i).toString)).toArray
+    val dflist = sc.parallelize(flist)
+    val fitsList = dflist.map(f => FitsUtils.readFits(f.toString)).toArray
     val map = FitsUtils.processMeta(fitsList).toSeq.sortBy(_._1).map(kv => kv._2)
 
     // get template
-    val template = new Template("resources/template.hdr")
+    val template = new Template(tmp)
 
     // parallelize files
     val fitsRdd = buildUp(fitsList.zip(map).toIterator)
 
     // save to parquet
-    save(fitsRdd, job, "resources/tmp_parquet")
+    save(fitsRdd, job, dst)
     fitsRdd.unpersist()
 
     /*
