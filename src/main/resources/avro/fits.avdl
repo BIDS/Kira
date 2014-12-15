@@ -1,0 +1,14 @@
+@namespace("edu.berkeley.bids.kira.avro")
+protocol Fits {
+
+record FitsValue {
+  union { null, int } xPos = null;
+  union { null, int } yPos = null;
+  union { null, float } value = null;
+  union { null, int } start = null;
+  union { null, int } end = null;
+  union { null, int } offset = null;
+  union { null, int } height = null;
+}
+
+}

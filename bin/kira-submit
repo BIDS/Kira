@@ -1,0 +1,70 @@
+#!/usr/bin/env bash
+#
+# Licensed to Big Data Genomics (BDG) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The BDG licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+# Figure out where KIRA is installed
+KIRA_REPO="$(cd `dirname $0`/..; pwd)"
+
+# Get list of required jars for KIRA
+KIRA_JARS=$("$KIRA_REPO"/bin/compute-kira-jars.sh)
+
+# Find the KIRA CLI jar
+num_versions=$(ls "$KIRA_REPO"/target/appassembler/repo/edu/berkeley/bids/kira/kira | wc -l)
+if [ "$num_versions" -eq "0" ]; then
+  echo "Failed to find kira jar in $KIRA_REPO/target/appassembler/repo/edu/berkeley/bids/kira/kira"
+  echo "You need to build KIRA before running this program."
+  exit 1
+fi
+if [ "$num_versions" -gt "1" ]; then
+  versions_list=$(ls "$KIRA_REPO"/target/appassembler/repo/edu/berkeley/bids/kira/kira)
+  echo "Found multiple KIRA versions in $KIRA_REPO/target/appassembler/repo/edu/berkeley/bids/kira/kira"
+  echo "$versions_list"
+  echo "Please remove all but one."
+  exit 1
+fi
+KIRA_JAR="$(ls "$KIRA_REPO"/target/appassembler/repo/edu/berkeley/bids/kira/kira/*/kira*.jar)"
+
+# Find spark-submit script
+if [ -z "$SPARK_HOME" ]; then
+  echo "Attempting to use 'spark-submit' on default path; you might need to set SPARK_HOME"
+  SPARK_SUBMIT=spark-submit
+else
+  SPARK_SUBMIT="$SPARK_HOME"/bin/spark-submit
+fi
+
+# Split args into Spark args and KIRA args
+# NOTE: if Spark uses gatherSparkSubmitOpts in spark-submit, this is unnecessary
+function usage() {
+  echo "adam-submit <spark-args> <adam-args>"
+  exit 0
+}
+source "$SPARK_HOME"/bin/utils.sh
+SUBMIT_USAGE_FUNCTION=usage
+gatherSparkSubmitOpts "$@"
+
+# submit the job to Spark
+"$SPARK_SUBMIT" \
+  --class edu.berkeley.bids.kira.Fits2Kira \
+  --conf spark.serializer=org.apache.spark.serializer.KryoSerializer \
+  --conf spark.kryo.registrator=edu.berkeley.bids.kira.serialization.MaddKryoRegistrator \
+  --conf spark.kryoserializer.buffer.mb=4 \
+  --conf spark.kryo.referenceTracking=true \
+  --jars "$KIRA_JARS" \
+  "${SUBMISSION_OPTS[@]}" \
+  "$KIRA_JAR" \
+  "${APPLICATION_OPTS[@]}"
