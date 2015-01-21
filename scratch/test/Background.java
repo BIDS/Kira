@@ -1,4 +1,5 @@
 import java.io.*;
+import java.lang.*;
 
 public class Background { 
 
@@ -89,7 +90,7 @@ public class Background {
     }
 
     /*trying out the opaque pointer for reference in C*/
-    public native int sep_makeback(double[][] data, Object mask, int dtype, 
+    public native int sep_makeback(byte[] data, Object mask, int dtype, 
 				   int mdtype, int w, int h, int bw, int bh, 
 				   double mthresh, int fw, int fh, double fthresh, 
 				   Sepbackmap backmap);
@@ -163,23 +164,45 @@ public class Background {
     public float globalback;
     public float globalrms;
 
-    public Background(double[][] data, Object mask, double maskthresh, int bw, int bh, int fw, int fh, double fthresh){
+    public Background(double[][] matrix, Object mask, double maskthresh, int bw, int bh, int fw, int fh, double fthresh){
+    	byte[] data = flatten(matrix);
 		int status = this.sep_makeback(data, (Object)mask, 82, 82, 6, 6, bw, bh, 0.0, fw, fh, 0.0, backmap);
     }
 
+    public byte[] flatten(double[][] matrix){
+    	int h = matrix.length;
+    	int w = matrix[0].length;
+    	byte[] ret = new byte[h*w*8];
+
+
+    	for(int i=0; i<matrix.length; i++){
+    		for(int j=0; j<matrix[i].length; j++){
+    			byte[] output = new byte[8];
+    			long l = Double.doubleToLongBits(matrix[i][j]);
+				for(int k = 0; k < 8; k++) 
+					ret[(i*w+j)*8+k] = (byte)((l >> (k * 8)) & 0xff);
+    		}
+    	}
+    	/*for(int i=0; i<h*w*8; i++){
+    		Byte b = ret[i];
+    		System.out.println(b.intValue()+", ");
+    	}*/
+    	return ret;
+    }
+
     public static void main (String[] args) {
-		double[][] data = new double[6][6];
+		double[][] matrix = new double[6][6];
 		for(int i=0; i<6; i++) {
 	    	for(int j=0; j<6; j++) {
-			data[i][j] = 0.1;
+				matrix[i][j] = 0.1;
 	    	}
 		}
-		data[1][1] = 1.0;
-		data[4][1] = 1.0;
-		data[1][4] = 1.0;
-		data[4][4] = 1.0;
+		matrix[1][1] = 1.0;
+		matrix[4][1] = 1.0;
+		matrix[1][4] = 1.0;
+		matrix[4][4] = 1.0;
 
-		Background bkg = new Background(data, (Object)null, 0.0, 3, 3, 1, 1, 0.0);
+		Background bkg = new Background(matrix, (Object)null, 0.0, 3, 3, 1, 1, 0.0);
 		System.out.println("JAVA: globalback: "+bkg.globalback+"\t globalrms: "+bkg.globalrms);
     }
 }

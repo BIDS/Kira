@@ -10,10 +10,10 @@ extern "C" {
 /*
  * Class:     Background
  * Method:    sep_makeback
- * Signature: ([[DLjava/lang/Object;IIIIIIDIIDLBackground/Sepbackmap;)I
+ * Signature: ([BLjava/lang/Object;IIIIIIDIIDLBackground/Sepbackmap;)I
  */
 JNIEXPORT jint JNICALL Java_Background_sep_1makeback
-  (JNIEnv *, jobject, jobjectArray, jobject, jint, jint, jint, jint, jint, jint, jdouble, jint, jint, jdouble, jobject);
+  (JNIEnv *, jobject, jbyteArray, jobject, jint, jint, jint, jint, jint, jint, jdouble, jint, jint, jdouble, jobject);
 
 /*
  * Class:     Background
