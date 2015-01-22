@@ -1,5 +1,6 @@
 import java.io.*;
 import java.lang.*;
+import java.nio.ByteBuffer;
 
 public class Background { 
 
@@ -30,14 +31,15 @@ public class Background {
     class Sepbackmap{
 		private int w;
 		private int h;
-		public float globalback;
+		private float globalback;
 		private float globalrms;
-		public Sepbackmap(int w, int h, float globalback, float globalrms){
-	    	this.w = w;
-	    	this.h = h;
-	    	this.globalback = globalback;
-	    	this.globalrms = globalrms;
-		}
+		private int bw, bh;
+		private int nx, ny;
+		private int n;
+		private float[] back;
+		private float[] dback;
+		private float[] sigma;
+		private float[] dsigma;
     }
 
     class Sepobj{
@@ -95,7 +97,7 @@ public class Background {
 				   double mthresh, int fw, int fh, double fthresh, 
 				   Sepbackmap backmap);
 
-    public native int sep_backarray(Sepbackmap bkmap, Object[] arr, int dtype);
+    public native int sep_backarray(Sepbackmap bkmap, byte[] arr, int dtype, float[] back, float[] dback, float[] sigma, float[] dsigma);
 
     public native int sep_backrmsarray(Sepbackmap bkmap, Object[] arr, int dtype);
 
@@ -160,13 +162,23 @@ public class Background {
     static { System.loadLibrary("BackgroundImpl"); }
     
 
-    public Sepbackmap backmap = new Sepbackmap(0, 0, 0, 0);
-    public float globalback;
-    public float globalrms;
+    public Sepbackmap backmap = new Sepbackmap();
 
     public Background(double[][] matrix, Object mask, double maskthresh, int bw, int bh, int fw, int fh, double fthresh){
     	byte[] data = flatten(matrix);
-		int status = this.sep_makeback(data, (Object)mask, 82, 82, 6, 6, bw, bh, 0.0, fw, fh, 0.0, backmap);
+		int status = this.sep_makeback(data, (Object)mask, 82, 82, 6, 6, bw, bh, 0.0, fw, fh, 0.0, this.backmap);
+		//this.backmap = new Sepbackmap(matrix.length, matrix[0].length, this.globalback, this.globalrms);
+    }
+
+    public double[][] back(int dtype){
+    	double result[][] = new double[backmap.h][backmap.w];
+
+    	byte[] data = new byte[backmap.h * backmap.w * 8];
+    	int status = sep_backarray(this.backmap, data, dtype, this.backmap.back, this.backmap.dback, this.backmap.sigma, this.backmap.dsigma);
+    	System.out.println("");
+
+    	result = deflatten(data, backmap.h, backmap.w);
+    	return result;
     }
 
     public byte[] flatten(double[][] matrix){
@@ -190,6 +202,46 @@ public class Background {
     	return ret;
     }
 
+    public double[][] deflatten(byte[] data, int h, int w){
+    	double matrix[][] = new double[h][w];
+    	for(int i=0; i<h; i++){
+    		for(int j=0; j<w; j++){
+    			byte[] bytes = new byte[8];
+    			long l = 0L;
+    			for(int k=0; k<8; k++){
+    				bytes[7-k] = (byte)(data[(i*w+j)*8+k] & 0xff);
+    			}
+    			matrix[i][j] = ByteBuffer.wrap(bytes).getDouble();
+    		}
+    		System.out.println("");
+    	}
+    	return matrix;
+    }
+
+	public void setBack(float[] vback){
+		this.backmap.back = new float[vback.length];
+		for(int i=0; i<this.backmap.back.length; i++)
+			this.backmap.back[i] = vback[i];
+	}
+
+	public void setDback(float[] vback){
+		this.backmap.dback = new float[vback.length];
+		for(int i=0; i<this.backmap.dback.length; i++)
+			this.backmap.dback[i] = vback[i];
+	}
+
+	public void setSigma(float[] vsigma){
+		this.backmap.sigma = new float[vsigma.length];
+		for(int i=0; i<this.backmap.sigma.length; i++)
+			this.backmap.sigma[i] = vsigma[i];
+	}
+
+	public void setDsigma(float[] vsigma){
+		this.backmap.dsigma = new float[vsigma.length];
+		for(int i=0; i<this.backmap.dsigma.length; i++)
+			this.backmap.dsigma[i] = vsigma[i];
+	}
+
     public static void main (String[] args) {
 		double[][] matrix = new double[6][6];
 		for(int i=0; i<6; i++) {
@@ -203,6 +255,43 @@ public class Background {
 		matrix[4][4] = 1.0;
 
 		Background bkg = new Background(matrix, (Object)null, 0.0, 3, 3, 1, 1, 0.0);
-		System.out.println("JAVA: globalback: "+bkg.globalback+"\t globalrms: "+bkg.globalrms);
+		System.out.println("JAVA: Backmap: "+bkg.backmap.globalback+"\t globalrms: "+bkg.backmap.globalrms);
+		System.out.println("JAVA: Backmap: w: "+bkg.backmap.w+"\t h: "+bkg.backmap.h);
+		System.out.println("JAVA: Backmap: bw: "+bkg.backmap.bw+"\t h: "+bkg.backmap.bh);
+		System.out.println("JAVA: Backmap: nx: "+bkg.backmap.nx+"\t ny: "+bkg.backmap.ny+"\t n: "+bkg.backmap.n);
+		
+		System.out.print("JAVA: Backmap: back: ");
+		for(int i=0; i<bkg.backmap.back.length; i++){
+			System.out.print(bkg.backmap.back[i]+"\t");
+		}
+		System.out.println("");
+		
+		System.out.print("JAVA: Backmap: dback: ");
+		for(int i=0; i<bkg.backmap.dback.length; i++){
+			System.out.print(bkg.backmap.dback[i]+"\t");
+		}
+		System.out.println("");
+		
+		System.out.print("JAVA: Backmap: sigma: ");
+		for(int i=0; i<bkg.backmap.sigma.length; i++){
+			System.out.print(bkg.backmap.sigma[i]+"\t");
+		}
+		System.out.println("");
+		
+		System.out.print("JAVA: Backmap: dsigma: ");
+		for(int i=0; i<bkg.backmap.dsigma.length; i++){
+			System.out.print(bkg.backmap.dsigma[i]+"\t");
+		}
+		System.out.println("");
+
+
+		double[][] back = bkg.back(82);
+		for(int i=0; i<back.length; i++){
+    		for(int j=0; j<back[i].length; j++){
+    			System.out.print(back[i][j]+", ");
+    		}
+    		System.out.println("");
+    	}
+
     }
 }
