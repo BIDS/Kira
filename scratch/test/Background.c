@@ -107,15 +107,36 @@ void sep_back_java_c(JNIEnv *env, jclass bkmapcls, jobject bkmap, sepbackmap *p,
 }
 
 JNIEXPORT jint JNICALL Java_Background_sep_1makeback
-(JNIEnv *env, jobject obj, jbyteArray data, jobject mask, jint dtype, jint mdtype, jint w, jint h, jint
+(JNIEnv *env, jobject obj, jbyteArray data, jobjectArray maskdata, jint dtype, jint mdtype, jint w, jint h, jint
  bw, jint bh, jdouble mthresh, jint fw, jint fh, jdouble fthresh, jobject backmap){
   
   int len = (*env)->GetArrayLength(env, data);
   jbyte *array = (jbyte *)(*env)->GetByteArrayElements(env, data, NULL);
 
+  int mlen1 = (*env)->GetArrayLength(env, maskdata);
+  printf("mlen1: %d\n", mlen1);
+  jboolean *mask;
+  if(mlen1 == 0){
+    mask = (void *)NULL;
+  }
+  else{
+    /*parse the matrix*/
+    jbooleanArray dim = (jbooleanArray)(*env)->GetObjectArrayElement(env, maskdata, 0);
+    int mlen2 = (*env)->GetArrayLength(env, dim);
+    printf("mlen2: %d\n", mlen2);
+    mask = malloc(sizeof(jboolean)* mlen1 * mlen2);
+    for(int i=0; i<mlen1; i++){
+      jbooleanArray oneDim= (jbooleanArray)(*env)->GetObjectArrayElement(env, maskdata, i);
+      jboolean *element=(*env)->GetBooleanArrayElements(env, oneDim, 0);
+      //mask[i] = malloc(sizeof(jboolean)*mlen2);
+      memcpy(mask+i*mlen2, element, sizeof(jboolean)*mlen2);
+   }
+  }
+
+
   /*printf("%d\n", len);
   for(int i=0; i<len; i++)
-    printf("%d, ", (unsigned char)array[i]);
+    printf("%d, ", (unsigned char)mask[i]);
   printf("\n");*/
 
   sepbackmap *p = (sepbackmap *)malloc(sizeof(sepbackmap));
@@ -124,7 +145,8 @@ JNIEXPORT jint JNICALL Java_Background_sep_1makeback
   p->bw = bw;
   p->bh = bh;
 
-  int status = sep_makeback(array, (void *)NULL, dtype, 0, w, h, bw, bh, mthresh, fw, fh, fthresh, &p);
+  int status = sep_makeback(array, mask, dtype, mdtype, w, h, bw, bh, mthresh, fw, fh, fthresh, &p);
+
   //printf("%d\n", status);
   printf("C sep_makeback: %d\t%d\t%f\t%f\t%d\t%d\t%d\t%d\n", p->w, p->h, p->globalback, p->globalrms, p->bw, p->bh, p->nx, p->ny);
   printf("C sep_makeback back: %f\t dback: %f\n", *(p->back), *(p->dback));
@@ -198,6 +220,13 @@ JNIEXPORT jint JNICALL Java_Background_sep_1backarray
   printf("status: %d\n", status);
   (*env)->SetByteArrayRegion(env, data, 0, len, array);
 
+  printf("%d, \n", array[0]);
+
+  /*for(int i=0; i<len/8; i++){
+    double d;
+    memcpy(&d, (jbyte *)(array+i*8), sizeof(double));
+    printf("%f, ", d);
+  }*/
 
   free(array);
   free(p);

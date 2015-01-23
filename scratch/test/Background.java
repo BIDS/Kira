@@ -92,7 +92,7 @@ public class Background {
     }
 
     /*trying out the opaque pointer for reference in C*/
-    public native int sep_makeback(byte[] data, Object mask, int dtype, 
+    public native int sep_makeback(byte[] data, boolean[][] mask, int dtype, 
 				   int mdtype, int w, int h, int bw, int bh, 
 				   double mthresh, int fw, int fh, double fthresh, 
 				   Sepbackmap backmap);
@@ -164,10 +164,9 @@ public class Background {
 
     public Sepbackmap backmap = new Sepbackmap();
 
-    public Background(double[][] matrix, Object mask, double maskthresh, int bw, int bh, int fw, int fh, double fthresh){
+    public Background(double[][] matrix, boolean[][] maskmatrix, double maskthresh, int bw, int bh, int fw, int fh, double fthresh){
     	byte[] data = flatten(matrix);
-		int status = this.sep_makeback(data, (Object)mask, 82, 82, 6, 6, bw, bh, 0.0, fw, fh, 0.0, this.backmap);
-		//this.backmap = new Sepbackmap(matrix.length, matrix[0].length, this.globalback, this.globalrms);
+		int status = this.sep_makeback(data, maskmatrix, 82, 11, 6, 6, bw, bh, 0.0, fw, fh, 0.0, this.backmap);
     }
 
     public double[][] back(int dtype){
@@ -254,7 +253,18 @@ public class Background {
 		matrix[1][4] = 1.0;
 		matrix[4][4] = 1.0;
 
-		Background bkg = new Background(matrix, (Object)null, 0.0, 3, 3, 1, 1, 0.0);
+		boolean[][] mask = new boolean[6][6];
+		for(int i=0; i<6; i++) {
+	    	for(int j=0; j<6; j++) {
+				mask[i][j] = false;
+	    	}
+		}
+		mask[1][1] = true;
+		mask[4][1] = true;
+		mask[1][4] = true;
+		mask[4][4] = true;
+
+		Background bkg = new Background(matrix, mask, 0.0, 3, 3, 1, 1, 0.0);
 		System.out.println("JAVA: Backmap: "+bkg.backmap.globalback+"\t globalrms: "+bkg.backmap.globalrms);
 		System.out.println("JAVA: Backmap: w: "+bkg.backmap.w+"\t h: "+bkg.backmap.h);
 		System.out.println("JAVA: Backmap: bw: "+bkg.backmap.bw+"\t h: "+bkg.backmap.bh);
