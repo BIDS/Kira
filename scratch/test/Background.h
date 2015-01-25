@@ -66,10 +66,10 @@ JNIEXPORT void JNICALL Java_Background_sep_1freeobjarray
 /*
  * Class:     Background
  * Method:    sep_sum_circle
- * Signature: (Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;IIIIIDDSDDDIDDDS)I
+ * Signature: ([B[B[BIIIIIDDSDDDI[D[D[D[SI)I
  */
 JNIEXPORT jint JNICALL Java_Background_sep_1sum_1circle
-  (JNIEnv *, jobject, jobject, jobject, jobject, jint, jint, jint, jint, jint, jdouble, jdouble, jshort, jdouble, jdouble, jdouble, jint, jdouble, jdouble, jdouble, jshort);
+  (JNIEnv *, jobject, jbyteArray, jbyteArray, jbyteArray, jint, jint, jint, jint, jint, jdouble, jdouble, jshort, jdouble, jdouble, jdouble, jint, jdoubleArray, jdoubleArray, jdoubleArray, jshortArray, jint);
 
 /*
  * Class:     Background
@@ -82,10 +82,10 @@ JNIEXPORT jint JNICALL Java_Background_sep_1sum_1cirann
 /*
  * Class:     Background
  * Method:    sep_sum_ellipse
- * Signature: (Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;IIIIIDDSDDDDDDIDDDS)I
+ * Signature: ([B[B[BIIIIIDDSDDDDDDI[D[D[D[SI)I
  */
 JNIEXPORT jint JNICALL Java_Background_sep_1sum_1ellipse
-  (JNIEnv *, jobject, jobject, jobject, jobject, jint, jint, jint, jint, jint, jdouble, jdouble, jshort, jdouble, jdouble, jdouble, jdouble, jdouble, jdouble, jint, jdouble, jdouble, jdouble, jshort);
+  (JNIEnv *, jobject, jbyteArray, jbyteArray, jbyteArray, jint, jint, jint, jint, jint, jdouble, jdouble, jshort, jdouble, jdouble, jdouble, jdouble, jdouble, jdouble, jint, jdoubleArray, jdoubleArray, jdoubleArray, jshortArray, jint);
 
 /*
  * Class:     Background

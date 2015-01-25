@@ -1,6 +1,7 @@
 import java.io.*;
 import java.lang.*;
 import java.nio.ByteBuffer;
+import java.util.Random;
 
 public class Background { 
 
@@ -9,6 +10,8 @@ public class Background {
     final int SEP_TINT = 31;
     final int SEP_TFLOAT = 42;
     final int SEP_TDOUBLE = 82;
+
+    final int[] SUPPORTED_IMAGE_DTYPES = new int[]{SEP_TDOUBLE, SEP_TFLOAT, SEP_TINT};
 
     /*input flag values (C macros)*/
     final int SEP_ERROR_IS_VAR = 0x0001;
@@ -114,11 +117,11 @@ public class Background {
 
     public native void sep_freeobjarray(Sepobj[] objects, int nobj);
 
-    public native int sep_sum_circle(Object data, Object error, Object mask, 
+    public native int sep_sum_circle(byte[] data, byte[] error, byte[] mask, 
 				     int dtype, int edtype, int mdtype, int w, int h, 
 				     double maskthresh, double gain, short inflags, 
-				     double x, double y, double r, int subpix, double sum, 
-				     double sumerr, double area, short flag);
+				     double x, double y, double r, int subpix, double[] sum, 
+				     double[] sumerr, double[] area, short[] flag, int index);
 
     public native int sep_sum_cirann(Object data, Object error, Object mask, 
 				     int dtype, int edtype, int mdtype, int w, int h, 
@@ -127,12 +130,12 @@ public class Background {
 				     int subpix, double sum, double sumerr, double area, 
 				     short flag);
 
-    public native int sep_sum_ellipse(Object data, Object error, Object mask, 
+    public native int sep_sum_ellipse(byte[] data, byte[] error, byte[] mask, 
 				      int dtype, int edtype, int mdtype, int w, int h, 
 				      double maskthresh, double gain, short inflags, 
 				      double x, double y, double a, double b, 
-				      double theta, double r, int subpix, double sum, 
-				      double sumerr, double area, short flag);
+				      double theta, double r, int subpix, double[] sum, 
+				      double[] sumerr, double[] area, short[] flag, int index);
 
     public native int sep_sum_ellipann(Object data, Object error, Object mask, 
 				       int dtype, int edtype, int mdtype, int w, int h, 
@@ -201,6 +204,92 @@ public class Background {
     	return ret;
     }
 
+    public void sum_circle(double[][] matrix, double[] x, double[] y, double r){
+    	float var = (float)0.0;
+    	float err = (float)0.0;
+    	float gain = (float)0.0;
+    	double[][] mask = null;
+    	double maskthresh = 0.0;
+    	int[] bkgann = null;
+    	int subpix = 5;
+
+    	/*manually setting the parameters below*/
+    	int dtype = SEP_TDOUBLE;
+    	int edtype = 0;
+    	int mdtype = 0;
+    	int h = matrix.length;
+    	int w = matrix[0].length;
+    	byte[] ptr = flatten(matrix);
+    	byte[] eptr = null;
+    	byte[] mptr = null;
+    	float scalaerr = (float)0.0;
+    	short inflag = 0;
+    	gain = (float)0.0;
+
+    	double[] sum = new double[x.length];
+    	for(int i=0; i< x.length; i++){
+    		sum[i] = 1.0;
+    	}
+    	double[] sumerr = new double[x.length];
+    	double[] area = new double[x.length];
+    	short[] flag = new short[x.length];
+    	/*this is the case where bkgann is null*/
+
+    	for(int i=0; i<x.length; i++){
+	    	int status = sep_sum_circle(ptr, eptr, mptr, dtype, edtype, mdtype, w, h, maskthresh, gain, inflag, x[i], y[i], r, subpix, sum, sumerr, area, flag, i);
+	    }
+
+    	System.out.print("sum: ");
+    	for(int i=0; i<x.length; i++){
+    		System.out.print(sum[i]+", ");
+    	}
+    	System.out.println("");
+
+    	/*Will turn back to the case where bkgann is not null later*/
+    }
+
+    public void sum_ellipse(double[][] matrix, double[] x, double[] y, double a, double b, double theta, int subpix){
+    	float var = (float)0.0;
+    	float err = (float)0.0;
+    	float gain = (float)0.0;
+    	double[][] mask = null;
+    	double maskthresh = 0.0;
+    	int[] bkgann = null;
+    	/*the default value of subpix should be 5*/
+    	double r = 1.0;
+
+    	/*manually setting the parameters below*/
+    	int dtype = SEP_TDOUBLE;
+    	int edtype = 0;
+    	int mdtype = 0;
+    	int h = matrix.length;
+    	int w = matrix[0].length;
+    	byte[] ptr = flatten(matrix);
+    	byte[] eptr = null;
+    	byte[] mptr = null;
+    	float scalaerr = (float)0.0;
+    	short inflag = 0;
+    	gain = (float)0.0;
+
+    	double[] sum = new double[x.length];
+    	double[] sumerr = new double[x.length];
+    	double[] area = new double[x.length];
+    	short[] flag = new short[x.length];
+    	/*this is the case where bkgann is null*/
+
+    	for(int i=0; i<x.length; i++){
+	    	int status = sep_sum_ellipse(ptr, eptr, mptr, dtype, edtype, mdtype, w, h, maskthresh, gain, inflag, x[i], y[i], a, b, theta, r, subpix, sum, sumerr, area, flag, i);
+	    }
+
+    	System.out.print("sum: ");
+    	for(int i=0; i<x.length; i++){
+    		System.out.print(sum[i]+", ");
+    	}
+    	System.out.println("");
+
+    	/*Will turn back to the case where bkgann is not null later*/
+    }
+
     public double[][] deflatten(byte[] data, int h, int w){
     	double matrix[][] = new double[h][w];
     	for(int i=0; i<h; i++){
@@ -264,6 +353,7 @@ public class Background {
 		mask[1][4] = true;
 		mask[4][4] = true;
 
+		/*testing background*/
 		Background bkg = new Background(matrix, mask, 0.0, 3, 3, 1, 1, 0.0);
 		System.out.println("JAVA: Backmap: "+bkg.backmap.globalback+"\t globalrms: "+bkg.backmap.globalrms);
 		System.out.println("JAVA: Backmap: w: "+bkg.backmap.w+"\t h: "+bkg.backmap.h);
@@ -302,6 +392,40 @@ public class Background {
     		}
     		System.out.println("");
     	}
+
+    	/*testing aperture with different dtypes*/
+    	int dim = 1000;
+    	int naper = dim;
+    	double r = 3;
+    	double[] x = new double[dim];
+    	double[] y = new double[dim];
+    	Random random = new Random();
+    	for(int i=0; i<dim; i++){
+    		x[i] = random.nextDouble()*(800-200)+200.0;
+    		y[i] = random.nextDouble()*(800-200)+200.0;
+    	}
+
+    	/*for(int i=0; i<dim; i++){
+			System.out.print(x[i]+", ");
+    	}
+    	System.out.println("");*/
+    	double[][] matrix2 = new double[dim][dim];
+    	for(int i=0; i<dim; i++){
+    		for(int j=0; j<dim; j++){
+    			matrix2[i][j] = 1.0;
+    		}
+    	}
+
+		System.out.println("=========sep_sum_circle()=========");
+    	bkg.sum_circle(matrix2, x, y, r);
+
+		/*for(int i=0; i<6; i++) {
+	    	for(int j=0; j<6; j++) {
+				matrix2[i][j] = 0.1;
+	    	}
+		}*/
+    	System.out.println("=========sep_sum_ellipse()=========");
+    	bkg.sum_ellipse(matrix2, x, x, 0.3, 0.3, 0.0, 0);
 
     }
 }

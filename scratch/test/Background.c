@@ -232,3 +232,40 @@ JNIEXPORT jint JNICALL Java_Background_sep_1backarray
   free(p);
   return status;
 }
+
+JNIEXPORT jint JNICALL Java_Background_sep_1sum_1circle
+  (JNIEnv *env, jobject obj, jbyteArray data, jbyteArray error, jbyteArray mask, jint dtype, jint edtype, jint mdtype, jint w, jint h, jdouble maskthresh, jdouble gain, jshort inflag, jdouble x, jdouble y, jdouble r, jint subpix, jdoubleArray sum, jdoubleArray sumerr, jdoubleArray area, jshortArray flag, jint index)
+{
+  jbyte *array = (jbyte *)(*env)->GetByteArrayElements(env, data, NULL);
+  double dsum = 0.0;
+  double dsumerr = 0.0;
+  double darea = 0.0;
+  short dflag = 0;
+
+  int status = sep_sum_circle(array, NULL, NULL, dtype, edtype, mdtype, w, h, maskthresh, gain, inflag, x, y, r, subpix, &dsum, &dsumerr, &darea, &dflag);
+
+  (*env)->SetDoubleArrayRegion(env, sum, index, 1, &dsum);
+  (*env)->SetDoubleArrayRegion(env, sumerr, index, 1, &dsumerr);
+  (*env)->SetDoubleArrayRegion(env, area, index, 1, &darea);
+  (*env)->SetShortArrayRegion(env, flag, index, 1, &dflag);
+  return status;
+}
+
+JNIEXPORT jint JNICALL Java_Background_sep_1sum_1ellipse
+  (JNIEnv *env, jobject obj, jbyteArray data, jbyteArray error, jbyteArray mask, jint dtype, jint edtype, jint mdtype, jint w, jint h, jdouble maskthresh, jdouble gain, jshort inflag, jdouble x, jdouble y, jdouble a, jdouble b, jdouble theta, jdouble r, jint subpix, jdoubleArray sum, jdoubleArray sumerr, jdoubleArray area, jshortArray flag, jint index)
+{
+  jbyte *array = (jbyte *)(*env)->GetByteArrayElements(env, data, NULL);
+  double dsum = 1.0;
+  double dsumerr = 1.0;
+  double darea = 1.0;
+  short dflag = 1;
+  
+  int status = sep_sum_ellipse(array, NULL, NULL, dtype, edtype, mdtype, w, h, maskthresh, gain, inflag, x, y, a, b, theta, r, subpix, &dsum, &dsumerr, &darea, &dflag);
+  //printf("C sep_sum_ellipse: dsum: %f\t dsumerr: %f\t darea: %f\t dflag: %d\n", dsum, dsumerr, darea, dflag);
+
+  (*env)->SetDoubleArrayRegion(env, sum, index, 1, &dsum);
+  (*env)->SetDoubleArrayRegion(env, sumerr, index, 1, &dsumerr);
+  (*env)->SetDoubleArrayRegion(env, area, index, 1, &darea);
+  (*env)->SetShortArrayRegion(env, flag, index, 1, &dflag);
+  return status;
+}
