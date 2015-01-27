@@ -660,7 +660,7 @@ public class Background {
     	//	System.out.print(matrix[0][i]+", ");
     	//System.out.println("");
     	double[][] noise = null;
-    	double[][] conv = null;
+    	double[][] conv = new double[][]{{1.0, 2.0, 1.0}, {2.0, 4.0, 2.0}, {1.0, 2.0, 1.0}};
     	int nobj = bkg.extract(matrix, (float)1.5*bkg.backmap.globalrms, noise, conv);
     	System.out.println("JAVA: exrtact() detects "+nobj+" objects");
     }
