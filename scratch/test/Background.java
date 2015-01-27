@@ -145,14 +145,14 @@ public class Background {
 				       double[] theta, double rin, double rout, int subpix, 
 				       double[] sum, double[] sumerr, double[] area, short[] flag);
 
-    public native int sep_kron_radius(Object data, Object mask, int dtype, int mdtype, 
-				      int w, int h, double maskthresh, double x, double y, 
-				      double cxx, double cyy, double cxy, double r, 
-				      double kronrad, short flag);
+    public native void sep_kron_radius(byte[] data, byte[] mask, int dtype, int mdtype, 
+				      int w, int h, double maskthresh, double[] x, double[] y, 
+				      double[] cxx, double[] cyy, double[] cxy, double[] r, 
+				      double[] kronrad, short[] flag);
 
-    public native int sep_ellipse_axes(double cxx, double cyy, double cxy, double a, double b, double theta);
+    public native void sep_ellipse_axes(double[] cxx, double[] cyy, double[] cxy, double[] a, double[] b, double[] theta);
 
-    public native void sep_ellipse_coeffs(double a, double b, double theta, double cxx, double cyy, double cxy);
+    public native void sep_ellipse_coeffs(double[] a, double[] b, double[] theta, double[] cxx, double[] cyy, double[] cxy);
 
     public native void sep_set_ellipse(String arr, int w, int h, double x, double y, 
 				       double cxx, double cyy, double cxy, double r, short val);
@@ -405,7 +405,7 @@ public class Background {
     	return deflatten(data, matrix.length, matrix[0].length);
     }
 
-    public int extract(double[][] matrix, float thresh, double[][] noise, double[][] conv){
+    public Sepobj[] extract(double[][] matrix, float thresh, double[][] noise, double[][] conv){
     	int minarea = 5;
     	//double[][] conv = new double[3][3]{{1.0, 2.0, 1.0}, {2.0, 4.0, 2.0}, {1.0, 2.0, 1.0}};
     	int deblend_nthresh = 32;
@@ -433,13 +433,72 @@ public class Background {
     	byte[] data = flatten(matrix);
 
 
-    	Sepobj[] objects = new Sepobj[128];
+    	Sepobj[] objects = new Sepobj[8192];
     	int nobj = sep_extract(data, nstream, dtype, ndtype, (short)0, w, h, thresh, minarea, cstream, convw, convh, deblend_nthresh, deblend_cont, clean, clean_param, objects, 0);
 
         for(int i=0; i<nobj; i++){
             System.out.println("Object ID: "+i+"\tX: "+objects[i].x+"\tY: "+objects[i].y);
         }
-    	return nobj;
+
+        Sepobj[] retobjs = new Sepobj[nobj];
+        for(int i=0; i<nobj; i++){
+            retobjs[i] = objects[i];
+        }
+    	return retobjs;
+    }
+
+    public double[][] ellipse_coeffs(double[] a, double[] b, double[] theta){
+        double[] cxx = new double[a.length];
+        double[] cyy = new double[a.length];
+        double[] cxy = new double[a.length];
+
+        sep_ellipse_coeffs(a, b, theta, cxx, cyy, cxy);
+
+        double[][] ret = new double[3][a.length];
+        ret[0] = cxx;
+        ret[1] = cyy;
+        ret[2] = cxy;
+        return ret;
+    }
+
+    public double[][] ellipse_axes(double[] cxx, double[] cyy, double[] cxy){
+        double[] a = new double[cxx.length];
+        double[] b = new double[cxx.length];
+        double[] theta = new double[cxx.length];
+
+        sep_ellipse_axes(cxx, cyy, cxy, a, b, theta);
+
+        double[][] ret = new double[3][a.length];
+        ret[0] = a;
+        ret[1] = b;
+        ret[2] = theta;
+        return ret;
+    }
+
+    public double[] kron_radius(double[][] matrix, double[] x, double[] y, double[] a, double[] b, double[] theta, double[] r, double[][] mask, double maskthresh)
+    {
+        byte[] data = flatten(matrix);
+        byte[] mstream = null;
+        if(mask != null)
+            mstream = flatten(mask);
+
+        double[][] ret = ellipse_coeffs(a, b, theta);
+        double[] cxx = ret[0];
+        double[] cyy = ret[1];
+        double[] cxy = ret[2];
+
+        int mdtype = SEP_TBYTE;
+        if(mask == null){
+            mdtype = 0;
+        }
+        maskthresh = 0.0;
+        int h = matrix.length;
+        int w = matrix[0].length;
+        double[] kr = new double[a.length];
+        short[] flag = new short[a.length];
+
+        sep_kron_radius(data, mstream, SEP_TDOUBLE, mdtype, w, h, maskthresh, x, y, cxx, cyy, cxy, r, kr, flag);
+        return kr;
     }
 
     public byte[] flatten(double[][] matrix){
@@ -655,6 +714,7 @@ public class Background {
 
     	System.out.println("=========extract() with noise array=========");
     	double[][] matrix = Fits.load("/Users/zhaozhang/projects/scratch/java/test/data/image.fits");
+        //double[][] matrix = Fits.load("/Users/zhaozhang/projects/Montage/m101/rawdir/2mass-atlas-990214n-j1200244.fits");
     	boolean[][] mask = new boolean[0][0];
     	Background bkg = new Background(matrix, mask, 0.0, 64, 64, 3, 3, 0.0);
     	//System.out.print("JAVA: main: matrix[0]: ");
@@ -670,7 +730,71 @@ public class Background {
     	//System.out.println("");
     	double[][] noise = null;
     	double[][] conv = new double[][]{{1.0, 2.0, 1.0}, {2.0, 4.0, 2.0}, {1.0, 2.0, 1.0}};
-    	int nobj = bkg.extract(matrix, (float)1.5*bkg.backmap.globalrms, noise, conv);
-    	System.out.println("JAVA: exrtact() detects "+nobj+" objects");
+    	Sepobj[] objects = bkg.extract(matrix, (float)1.5*bkg.backmap.globalrms, noise, conv);
+    	System.out.println("JAVA: exrtact() detects "+objects.length+" objects");
+        double[][] ret;
+
+        /*System.out.println("JAVA: results of ellipse_coeffs(): cxx");
+        for(int i=0; i<objects.length; i++){
+            System.out.print(objects[i].cxx+", ");
+        }
+        System.out.println("");*/
+
+        /*System.out.println("==========ellipse_coeffs() test=============");
+        double[] a = new double[objects.length];
+        double[] b = new double[objects.length];
+        double[] theta = new double[objects.length];
+        for(int i=0; i<objects.length; i++){
+            a[i] = objects[i].a;
+            b[i] = objects[i].b;
+            theta[i] = objects[i].theta;
+        }
+        ret = bkg.ellipse_coeffs(a, b, theta);
+        for(int i=0; i<ret.length; i++){
+            System.out.println("JAVA: results of ellipse_coeffs(): "+i);
+            for(int j=0; j<ret[i].length; j++){
+                System.out.print(ret[i][j]+", ");
+            }
+            System.out.println("");
+        }
+
+        System.out.println("==========ellipse_axes() test=============");
+        double[] cxx = new double[objects.length];
+        double[] cyy = new double[objects.length];
+        double[] cxy = new double[objects.length];
+        for(int i=0; i<objects.length; i++){
+            cxx[i] = objects[i].cxx;
+            cyy[i] = objects[i].cyy;
+            cxy[i] = objects[i].cxy;
+        }
+        ret = bkg.ellipse_axes(cxx, cyy, cxy);
+        for(int i=0; i<ret.length; i++){
+            System.out.println("JAVA: results of ellipse_axes(): "+i);
+            for(int j=0; j<ret[i].length; j++){
+                System.out.print(ret[i][j]+", ");
+            }
+            System.out.println("");
+        }*/
+
+        System.out.println("==========kron_radius() test=============");
+        double[] a = new double[objects.length];
+        double[] b = new double[objects.length];
+        double[] theta = new double[objects.length];
+        double[] x = new double[objects.length];
+        double[] y = new double[objects.length];
+        double[] r = new double[objects.length];
+        Arrays.fill(r, 6.0);
+        for(int i=0; i<objects.length; i++){
+            a[i] = objects[i].a;
+            b[i] = objects[i].b;
+            theta[i] = objects[i].theta;
+            x[i] = objects[i].x;
+            y[i] = objects[i].y;
+        }
+        double[] kr = bkg.kron_radius(matrix, x, y, a, b, theta, r, null, 0.0);
+        for(int i=0; i<kr.length; i++){
+            System.out.print(kr[i]+", ");
+        }
+        System.out.println("");
     }
 }

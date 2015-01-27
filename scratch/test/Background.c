@@ -404,3 +404,72 @@ JNIEXPORT jint JNICALL Java_Background_sep_1extract
   }
   return nobj;
 }
+
+JNIEXPORT void JNICALL Java_Background_sep_1ellipse_1coeffs
+  (JNIEnv *env, jobject obj, jdoubleArray a, jdoubleArray b, jdoubleArray theta, jdoubleArray cxx, jdoubleArray cyy, jdoubleArray cxy)
+{
+  int len = (*env)->GetArrayLength(env, a);
+  jdouble *a_array = (jdouble *)(*env)->GetDoubleArrayElements(env, a, 0);
+  jdouble *b_array = (jdouble *)(*env)->GetDoubleArrayElements(env, b, 0);
+  jdouble *theta_array = (jdouble *)(*env)->GetDoubleArrayElements(env, theta, 0);
+
+  jdouble *cxx_array = malloc(sizeof(double)*len);
+  jdouble *cyy_array = malloc(sizeof(double)*len);
+  jdouble *cxy_array = malloc(sizeof(double)*len);
+  for(int i=0; i<len; i++){
+    sep_ellipse_coeffs(a_array[i], b_array[i], theta_array[i], &cxx_array[i], &cyy_array[i], &cxy_array[i]);
+  }
+  (*env)->SetDoubleArrayRegion(env, cxx, 0, len, cxx_array);
+  (*env)->SetDoubleArrayRegion(env, cyy, 0, len, cyy_array);
+  (*env)->SetDoubleArrayRegion(env, cxy, 0, len, cxy_array);
+  free(cxx_array);
+  free(cyy_array);
+  free(cxy_array);
+}
+
+JNIEXPORT void JNICALL Java_Background_sep_1ellipse_1axes
+  (JNIEnv *env, jobject obj, jdoubleArray cxx, jdoubleArray cyy, jdoubleArray cxy, jdoubleArray a, jdoubleArray b, jdoubleArray theta)
+{
+  int len = (*env)->GetArrayLength(env, cxx);
+  jdouble *cxx_array = (jdouble *)(*env)->GetDoubleArrayElements(env, cxx, 0);
+  jdouble *cyy_array = (jdouble *)(*env)->GetDoubleArrayElements(env, cyy, 0);
+  jdouble *cxy_array = (jdouble *)(*env)->GetDoubleArrayElements(env, cxy, 0);
+
+  jdouble *a_array = malloc(sizeof(double)*len);
+  jdouble *b_array = malloc(sizeof(double)*len);
+  jdouble *theta_array = malloc(sizeof(double)*len);
+  for(int i=0; i<len; i++){
+    sep_ellipse_coeffs(cxx_array[i], cyy_array[i], cxy_array[i], &a_array[i], &b_array[i], &theta_array[i]);
+  }
+  (*env)->SetDoubleArrayRegion(env, a, 0, len, a_array);
+  (*env)->SetDoubleArrayRegion(env, b, 0, len, b_array);
+  (*env)->SetDoubleArrayRegion(env, theta, 0, len, theta_array);
+}
+
+JNIEXPORT void JNICALL Java_Background_sep_1kron_1radius
+  (JNIEnv *env, jobject obj, jbyteArray data, jbyteArray mstream, jint dtype, jint mdtype, jint w, jint h, jdouble maskthresh, jdoubleArray x, jdoubleArray y, jdoubleArray cxx, jdoubleArray cyy, jdoubleArray cxy, jdoubleArray r, jdoubleArray kr, jshortArray flag)
+{
+  jbyte *array = (jbyte *)(*env)->GetByteArrayElements(env, data, NULL);  
+
+  jbyte *marray = NULL;
+  if(mstream != NULL){
+    jbyte *marray = (jbyte *)(*env)->GetByteArrayElements(env, mstream, NULL);  
+  }
+
+  int len = (*env)->GetArrayLength(env, cxx);
+  jdouble *x_array = (jdouble *)(*env)->GetDoubleArrayElements(env, x, 0);
+  jdouble *y_array = (jdouble *)(*env)->GetDoubleArrayElements(env, y, 0);
+  jdouble *cxx_array = (jdouble *)(*env)->GetDoubleArrayElements(env, cxx, 0);
+  jdouble *cyy_array = (jdouble *)(*env)->GetDoubleArrayElements(env, cyy, 0);
+  jdouble *cxy_array = (jdouble *)(*env)->GetDoubleArrayElements(env, cxy, 0);  
+  jdouble *r_array = (jdouble *)(*env)->GetDoubleArrayElements(env, r, 0);
+
+  jdouble *kr_array = (jdouble *)malloc(sizeof(double)*len);
+  jshort *flag_array = (jshort *)malloc(sizeof(short)*len);
+  for(int i=0; i<len; i++){
+    sep_kron_radius(array, marray, dtype, mdtype, w, h, maskthresh, x_array[i], y_array[i], cxx_array[i], cyy_array[i], cxy_array[i], r_array[i], &kr_array[i], &flag_array[i]);
+  }
+    
+  (*env)->SetDoubleArrayRegion(env, kr, 0, len, kr_array);
+  (*env)->SetShortArrayRegion(env, flag, 0, len, flag_array);
+}  

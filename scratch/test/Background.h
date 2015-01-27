@@ -98,26 +98,26 @@ JNIEXPORT jint JNICALL Java_Background_sep_1sum_1ellipann
 /*
  * Class:     Background
  * Method:    sep_kron_radius
- * Signature: (Ljava/lang/Object;Ljava/lang/Object;IIIIDDDDDDDDS)I
+ * Signature: ([B[BIIIID[D[D[D[D[D[D[D[S)V
  */
-JNIEXPORT jint JNICALL Java_Background_sep_1kron_1radius
-  (JNIEnv *, jobject, jobject, jobject, jint, jint, jint, jint, jdouble, jdouble, jdouble, jdouble, jdouble, jdouble, jdouble, jdouble, jshort);
+JNIEXPORT void JNICALL Java_Background_sep_1kron_1radius
+  (JNIEnv *, jobject, jbyteArray, jbyteArray, jint, jint, jint, jint, jdouble, jdoubleArray, jdoubleArray, jdoubleArray, jdoubleArray, jdoubleArray, jdoubleArray, jdoubleArray, jshortArray);
 
 /*
  * Class:     Background
  * Method:    sep_ellipse_axes
- * Signature: (DDDDDD)I
+ * Signature: ([D[D[D[D[D[D)V
  */
-JNIEXPORT jint JNICALL Java_Background_sep_1ellipse_1axes
-  (JNIEnv *, jobject, jdouble, jdouble, jdouble, jdouble, jdouble, jdouble);
+JNIEXPORT void JNICALL Java_Background_sep_1ellipse_1axes
+  (JNIEnv *, jobject, jdoubleArray, jdoubleArray, jdoubleArray, jdoubleArray, jdoubleArray, jdoubleArray);
 
 /*
  * Class:     Background
  * Method:    sep_ellipse_coeffs
- * Signature: (DDDDDD)V
+ * Signature: ([D[D[D[D[D[D)V
  */
 JNIEXPORT void JNICALL Java_Background_sep_1ellipse_1coeffs
-  (JNIEnv *, jobject, jdouble, jdouble, jdouble, jdouble, jdouble, jdouble);
+  (JNIEnv *, jobject, jdoubleArray, jdoubleArray, jdoubleArray, jdoubleArray, jdoubleArray, jdoubleArray);
 
 /*
  * Class:     Background
