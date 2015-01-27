@@ -382,7 +382,7 @@ JNIEXPORT jint JNICALL Java_Background_sep_1extract
   double *dp = (double *)carray;
   for(int i=0; i<convw*convh; i++){
     conv[i] = *(dp++);
-    printf("conv[%d]: %f\n", i, conv[i]);
+    //printf("conv[%d]: %f\n", i, conv[i]);
   }
 
   sepobj *objs;
@@ -390,9 +390,17 @@ JNIEXPORT jint JNICALL Java_Background_sep_1extract
   int status = sep_extract(marray, NULL, dtype, ndtype, noise_flag, w, h, thresh, minarea, conv, convw, convh, deblend_nthresh, deblend_cont, clean_flag, clean_param, &objs, &nobj);
   printf("C sep_extract: status: %d\n", status);
 
-  for(int i=0; i<nobj; i++)
-    printf("Number: %d\t X_IMAGE: %f\t Y_IMAGE: %f\n", i, objs[i].x, objs[i].y);
+  /*for(int i=0; i<nobj; i++)
+    printf("Number: %d\t X_IMAGE: %f\t Y_IMAGE: %f\n", i, objs[i].x, objs[i].y);*/
 
+  jclass cls = (*env)->GetObjectClass(env, obj);
+  assert(cls != NULL);
+  jmethodID consID = (*env)->GetMethodID(env, cls, "init_obj", "(DIIIIIIDDDDDFFFFFFFFFFIIIISI)LBackground$Sepobj;");
+  assert(consID != NULL);
 
+  for(int i=0; i<nobj; i++){
+    jobject sepobj = (*env)->CallObjectMethod(env, obj, consID, objs[i].thresh, objs[i].npix, objs[i].tnpix, objs[i].xmin, objs[i].xmax, objs[i].ymin, objs[i].ymax, objs[i].x, objs[i].y, objs[i].x2, objs[i].y2, objs[i].xy, objs[i].a, objs[i].b, objs[i].theta, objs[i].cxx, objs[i].cyy, objs[i].cxy, objs[i].cflux, objs[i].flux, objs[i].cpeak, objs[i].peak, objs[i].xcpeak, objs[i].ycpeak, objs[i].xpeak, objs[i].ypeak, objs[i].flag);
+    (*env)->SetObjectArrayElement(env, objects, i, sepobj);
+  }
   return nobj;
 }

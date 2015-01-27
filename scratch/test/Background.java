@@ -46,7 +46,7 @@ public class Background {
     }
 
     class Sepobj{
-	private float thresh;
+	private double thresh;
 	private int npix;
 	private int tnpix;
 	private int xmin, xmax, ymin, ymax;
@@ -62,7 +62,7 @@ public class Background {
 	private int xcpeak, ycpeak;
 	private short flag;
 	private int pix;
-	public Sepobj(float thresh, int npix, int tnpix, int xmin, int xmax, int ymin, int ymax, double x, double y, double x2, double y2, double xy, float a, float b, float theta, float cxx, float cyy, float cxy, float cflux, float flux, float cpeak, float peak, int xpeak, int ypeak, int xcpeak, int ycpeak, short flag, int pix){
+	public Sepobj(double thresh, int npix, int tnpix, int xmin, int xmax, int ymin, int ymax, double x, double y, double x2, double y2, double xy, float a, float b, float theta, float cxx, float cyy, float cxy, float cflux, float flux, float cpeak, float peak, int xpeak, int ypeak, int xcpeak, int ycpeak, short flag, int pix){
 	    this.thresh = thresh;
 	    this.npix = npix;
 	    this.tnpix = tnpix;
@@ -167,6 +167,11 @@ public class Background {
     
 
     public Sepbackmap backmap = new Sepbackmap();
+
+    public Sepobj init_obj(double thresh, int npix, int tnpix, int xmin, int xmax, int ymin, int ymax, double x, double y, double x2, double y2, double xy, float a, float b, float theta, float cxx, float cyy, float cxy, float cflux, float flux, float cpeak, float peak, int xpeak, int ypeak, int xcpeak, int ycpeak, short flag, int pix){
+        Sepobj obj = new Sepobj(thresh, npix, tnpix, xmin, xmax, ymin, ymax, x, y, x2, y2, xy, a, b, theta, cxx, cyy, cxy, cflux, flux, cpeak, peak, xpeak, ypeak, xcpeak, ycpeak, flag, pix);
+        return obj;
+    }
 
     public Background(double[][] matrix, boolean[][] maskmatrix, double maskthresh, int bw, int bh, int fw, int fh, double fthresh){
     	byte[] data = flatten(matrix);
@@ -430,6 +435,10 @@ public class Background {
 
     	Sepobj[] objects = new Sepobj[128];
     	int nobj = sep_extract(data, nstream, dtype, ndtype, (short)0, w, h, thresh, minarea, cstream, convw, convh, deblend_nthresh, deblend_cont, clean, clean_param, objects, 0);
+
+        for(int i=0; i<nobj; i++){
+            System.out.println("Object ID: "+i+"\tX: "+objects[i].x+"\tY: "+objects[i].y);
+        }
     	return nobj;
     }
 
