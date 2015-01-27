@@ -371,3 +371,19 @@ JNIEXPORT jint JNICALL Java_Background_sep_1subbackarray
 
   return status;
 }
+
+JNIEXPORT jint JNICALL Java_Background_sep_1extract
+  (JNIEnv *env, jobject obj, jbyteArray data, jbyteArray nstream, jint dtype, jint ndtype, jshort noise_flag, jint w, jint h, jfloat thresh, jint minarea, jbyteArray conv, jint convw, jint convh, jint deblend_nthresh, jdouble deblend_cont, jboolean clean_flag, jdouble clean_param, jobjectArray objects, jint nobj)
+{
+  jbyte *marray = (jbyte *)(*env)->GetByteArrayElements(env, data, NULL);  
+  sepobj *objs;
+
+  int status = sep_extract(marray, NULL, dtype, ndtype, noise_flag, w, h, thresh, minarea, NULL, convw, convh, deblend_nthresh, deblend_cont, clean_flag, clean_param, &objs, &nobj);
+  printf("C sep_extract: status: %d\n", status);
+
+  for(int i=0; i<nobj; i++)
+    printf("Number: %d\t X_IMAGE: %f\t Y_IMAGE: %f\n", i, objs[i].x, objs[i].y);
+
+
+  return nobj;
+}

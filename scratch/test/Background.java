@@ -108,12 +108,13 @@ public class Background {
 
     public native void sep_freeback(Sepbackmap bkmap);
 
-    public native int sep_extract(Object image, Object noise, int dtype, 
+    public native int sep_extract(byte[] data, byte[] noise, int dtype, 
 				  int ndtype, short noise_flag, int w, int h, 
-				  float thresh, int minarea, float conv, int convw, 
+				  float thresh, int minarea, byte[] conv, int convw, 
 				  int convh, int deblend_nthresh, double deblend_cont, 
-				  int clean_flag, double clean_param, Sepobj[][] objects, 
+				  boolean clean_flag, double clean_param, Sepobj[] objects, 
 				  int nobj);
+
 
     public native void sep_freeobjarray(Sepobj[] objects, int nobj);
 
@@ -166,10 +167,8 @@ public class Background {
     
 
     public Sepbackmap backmap = new Sepbackmap();
-    public double[][] matrix;
 
     public Background(double[][] matrix, boolean[][] maskmatrix, double maskthresh, int bw, int bh, int fw, int fh, double fthresh){
-    	this.matrix = matrix;
     	byte[] data = flatten(matrix);
     	int h = matrix.length;
     	int w = matrix[0].length;
@@ -187,26 +186,7 @@ public class Background {
     	return result;
     }
 
-    public byte[] flatten(double[][] matrix){
-    	int h = matrix.length;
-    	int w = matrix[0].length;
-    	byte[] ret = new byte[h*w*8];
 
-
-    	for(int i=0; i<matrix.length; i++){
-    		for(int j=0; j<matrix[i].length; j++){
-    			byte[] output = new byte[8];
-    			long l = Double.doubleToLongBits(matrix[i][j]);
-				for(int k = 0; k < 8; k++) 
-					ret[(i*w+j)*8+k] = (byte)((l >> (k * 8)) & 0xff);
-    		}
-    	}
-    	/*for(int i=0; i<h*w*8; i++){
-    		Byte b = ret[i];
-    		System.out.println(b.intValue()+", ");
-    	}*/
-    	return ret;
-    }
 
     public void sum_circle(double[][] matrix, double[] x, double[] y, double r, double[] bkgann, int subpix){
     	float var = (float)0.0;
@@ -410,15 +390,68 @@ public class Background {
     	/*Will turn back to the case where bkgann is not null later*/
     }
 
-    public int subfrom(double[][] matrix){
+    public double[][] subfrom(double[][] matrix){
     	if(matrix.length != this.backmap.h || matrix[0].length != this.backmap.w){
     		System.out.println("Input data dimensions do not match background dimensions.");
     		System.exit(1);
     	}
-    	byte[] data = flatten(this.matrix);
+    	byte[] data = flatten(matrix);
     	int status = sep_subbackarray(this.backmap, data, SEP_TDOUBLE, this.backmap.back, this.backmap.dback, this.backmap.sigma, this.backmap.dsigma);
-    	this.matrix = deflatten(data, matrix.length, matrix[0].length);
-    	return status;
+    	return deflatten(data, matrix.length, matrix[0].length);
+    }
+
+    public int extract(double[][] matrix, float thresh, double[][] noise, double[][] conv){
+    	int minarea = 5;
+    	//double[][] conv = new double[3][3]{{1.0, 2.0, 1.0}, {2.0, 4.0, 2.0}, {1.0, 2.0, 1.0}};
+    	int deblend_nthresh = 32;
+    	double deblend_cont = 0.005;
+    	boolean clean = true;
+    	double clean_param = 1.0;
+    	int dtype = SEP_TDOUBLE;
+    	int ndtype = SEP_TDOUBLE;
+
+    	int h = matrix.length;
+    	int w = matrix[0].length;
+
+    	int convh = 0;
+    	int convw = 0;
+    	byte[] cstream = null;
+    	if(conv != null){
+	    	convh = conv.length;
+    		convw = conv[0].length;
+    		cstream = flatten(conv);
+		}
+		byte[] nstream = null;
+		if(noise != null){
+			nstream = flatten(noise);
+		}
+    	byte[] data = flatten(matrix);
+
+
+    	Sepobj[] objects = new Sepobj[128];
+    	int nobj = sep_extract(data, nstream, dtype, ndtype, (short)0, w, h, thresh, minarea, cstream, convw, convh, deblend_nthresh, deblend_cont, clean, clean_param, objects, 0);
+    	return nobj;
+    }
+
+    public byte[] flatten(double[][] matrix){
+    	int h = matrix.length;
+    	int w = matrix[0].length;
+    	byte[] ret = new byte[h*w*8];
+
+
+    	for(int i=0; i<matrix.length; i++){
+    		for(int j=0; j<matrix[i].length; j++){
+    			byte[] output = new byte[8];
+    			long l = Double.doubleToLongBits(matrix[i][j]);
+				for(int k = 0; k < 8; k++) 
+					ret[(i*w+j)*8+k] = (byte)((l >> (k * 8)) & 0xff);
+    		}
+    	}
+    	/*for(int i=0; i<h*w*8; i++){
+    		Byte b = ret[i];
+    		System.out.println(b.intValue()+", ");
+    	}*/
+    	return ret;
     }
 
     public double[][] deflatten(byte[] data, int h, int w){
@@ -493,9 +526,9 @@ public class Background {
 	}
 
     public static void main (String[] args) {
-    	int dim = 128;
+    	/*int dim = 128;
     	Random random = new Random();
-		/*double[][] matrix = new double[dim][dim];
+		double[][] matrix = new double[dim][dim];
 		for(int i=0; i<dim; i++) {
 	    	for(int j=0; j<dim; j++) {
 				matrix[i][j] = random.nextDouble();
@@ -615,19 +648,20 @@ public class Background {
     	double[][] matrix = Fits.load("/Users/zhaozhang/projects/scratch/java/test/data/image.fits");
     	boolean[][] mask = new boolean[0][0];
     	Background bkg = new Background(matrix, mask, 0.0, 64, 64, 3, 3, 0.0);
-    	/*System.out.print("JAVA: main: matrix[0]: ");
-    	for(int i=0; i<dim; i++)
-    		System.out.print(bkg.matrix[0][i]+", ");
-    	System.out.println("");*/
-    	bkg.printBkg();
-    	System.out.println("============================================");
-    	bkg.subfrom(matrix);
-    	bkg.printBkg();
-
-    	
-    	
+    	//System.out.print("JAVA: main: matrix[0]: ");
     	//for(int i=0; i<dim; i++)
-    	//	System.out.print(bkg.matrix[0][i]+", ");
+    	//	System.out.print(matrix[0][i]+", ");
     	//System.out.println("");
+    	//bkg.printBkg();
+    	System.out.println("============================================");
+    	matrix = bkg.subfrom(matrix);
+    	//bkg.printBkg();
+       	//for(int i=0; i<dim; i++)
+    	//	System.out.print(matrix[0][i]+", ");
+    	//System.out.println("");
+    	double[][] noise = null;
+    	double[][] conv = null;
+    	int nobj = bkg.extract(matrix, (float)1.5*bkg.backmap.globalrms, noise, conv);
+    	System.out.println("JAVA: exrtact() detects "+nobj+" objects");
     }
 }

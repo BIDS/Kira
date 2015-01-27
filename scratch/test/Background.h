@@ -50,10 +50,10 @@ JNIEXPORT void JNICALL Java_Background_sep_1freeback
 /*
  * Class:     Background
  * Method:    sep_extract
- * Signature: (Ljava/lang/Object;Ljava/lang/Object;IISIIFIFIIIDID[[LBackground/Sepobj;I)I
+ * Signature: ([B[BIISIIFI[BIIIDZD[LBackground/Sepobj;I)I
  */
 JNIEXPORT jint JNICALL Java_Background_sep_1extract
-  (JNIEnv *, jobject, jobject, jobject, jint, jint, jshort, jint, jint, jfloat, jint, jfloat, jint, jint, jint, jdouble, jint, jdouble, jobjectArray, jint);
+  (JNIEnv *, jobject, jbyteArray, jbyteArray, jint, jint, jshort, jint, jint, jfloat, jint, jbyteArray, jint, jint, jint, jdouble, jboolean, jdouble, jobjectArray, jint);
 
 /*
  * Class:     Background
