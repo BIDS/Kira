@@ -34,10 +34,10 @@ JNIEXPORT jint JNICALL Java_Background_sep_1backrmsarray
 /*
  * Class:     Background
  * Method:    sep_subbackarray
- * Signature: (LBackground/Sepbackmap;[Ljava/lang/Object;I)I
+ * Signature: (LBackground/Sepbackmap;[BI[F[F[F[F)I
  */
 JNIEXPORT jint JNICALL Java_Background_sep_1subbackarray
-  (JNIEnv *, jobject, jobject, jobjectArray, jint);
+  (JNIEnv *, jobject, jobject, jbyteArray, jint, jfloatArray, jfloatArray, jfloatArray, jfloatArray);
 
 /*
  * Class:     Background

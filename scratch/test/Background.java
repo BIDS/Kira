@@ -104,7 +104,7 @@ public class Background {
 
     public native int sep_backrmsarray(Sepbackmap bkmap, Object[] arr, int dtype);
 
-    public native int sep_subbackarray(Sepbackmap bkmap, Object[] arr, int dtype);
+    public native int sep_subbackarray(Sepbackmap bkmap, byte[] arr, int dtype, float[] back, float[] dback, float[] sigma, float[] dsigma);
 
     public native void sep_freeback(Sepbackmap bkmap);
 
@@ -166,10 +166,14 @@ public class Background {
     
 
     public Sepbackmap backmap = new Sepbackmap();
+    public double[][] matrix;
 
     public Background(double[][] matrix, boolean[][] maskmatrix, double maskthresh, int bw, int bh, int fw, int fh, double fthresh){
+    	this.matrix = matrix;
     	byte[] data = flatten(matrix);
-		int status = this.sep_makeback(data, maskmatrix, 82, 11, 6, 6, bw, bh, 0.0, fw, fh, 0.0, this.backmap);
+    	int h = matrix.length;
+    	int w = matrix[0].length;
+		int status = this.sep_makeback(data, maskmatrix, 82, 11, w, h, bw, bh, 0.0, fw, fh, 0.0, this.backmap);
     }
 
     public double[][] back(int dtype){
@@ -405,6 +409,18 @@ public class Background {
 
     	/*Will turn back to the case where bkgann is not null later*/
     }
+
+    public int subfrom(double[][] matrix){
+    	if(matrix.length != this.backmap.h || matrix[0].length != this.backmap.w){
+    		System.out.println("Input data dimensions do not match background dimensions.");
+    		System.exit(1);
+    	}
+    	byte[] data = flatten(this.matrix);
+    	int status = sep_subbackarray(this.backmap, data, SEP_TDOUBLE, this.backmap.back, this.backmap.dback, this.backmap.sigma, this.backmap.dsigma);
+    	this.matrix = deflatten(data, matrix.length, matrix[0].length);
+    	return status;
+    }
+
     public double[][] deflatten(byte[] data, int h, int w){
     	double matrix[][] = new double[h][w];
     	for(int i=0; i<h; i++){
@@ -416,7 +432,7 @@ public class Background {
     			}
     			matrix[i][j] = ByteBuffer.wrap(bytes).getDouble();
     		}
-    		System.out.println("");
+    		//System.out.println("");
     	}
     	return matrix;
     }
@@ -445,11 +461,44 @@ public class Background {
 			this.backmap.dsigma[i] = vsigma[i];
 	}
 
+	public void printBkg(){
+		System.out.println("JAVA: Backmap: "+this.backmap.globalback+"\t globalrms: "+this.backmap.globalrms);
+		System.out.println("JAVA: Backmap: w: "+this.backmap.w+"\t h: "+this.backmap.h);
+		System.out.println("JAVA: Backmap: bw: "+this.backmap.bw+"\t h: "+this.backmap.bh);
+		System.out.println("JAVA: Backmap: nx: "+this.backmap.nx+"\t ny: "+this.backmap.ny+"\t n: "+this.backmap.n);
+		
+		System.out.print("JAVA: Backmap: back: ");
+		for(int i=0; i<this.backmap.back.length; i++){
+			System.out.print(this.backmap.back[i]+"\t");
+		}
+		System.out.println("");
+		
+		System.out.print("JAVA: Backmap: dback: ");
+		for(int i=0; i<this.backmap.dback.length; i++){
+			System.out.print(this.backmap.dback[i]+"\t");
+		}
+		System.out.println("");
+		
+		System.out.print("JAVA: Backmap: sigma: ");
+		for(int i=0; i<this.backmap.sigma.length; i++){
+			System.out.print(this.backmap.sigma[i]+"\t");
+		}
+		System.out.println("");
+		
+		System.out.print("JAVA: Backmap: dsigma: ");
+		for(int i=0; i<this.backmap.dsigma.length; i++){
+			System.out.print(this.backmap.dsigma[i]+"\t");
+		}
+		System.out.println("");
+	}
+
     public static void main (String[] args) {
-		double[][] matrix = new double[6][6];
-		for(int i=0; i<6; i++) {
-	    	for(int j=0; j<6; j++) {
-				matrix[i][j] = 0.1;
+    	int dim = 128;
+    	Random random = new Random();
+		/*double[][] matrix = new double[dim][dim];
+		for(int i=0; i<dim; i++) {
+	    	for(int j=0; j<dim; j++) {
+				matrix[i][j] = random.nextDouble();
 	    	}
 		}
 		matrix[1][1] = 1.0;
@@ -457,19 +506,19 @@ public class Background {
 		matrix[1][4] = 1.0;
 		matrix[4][4] = 1.0;
 
-		boolean[][] mask = new boolean[6][6];
-		for(int i=0; i<6; i++) {
-	    	for(int j=0; j<6; j++) {
+		boolean[][] mask = new boolean[dim][dim];
+		for(int i=0; i<dim; i++) {
+	    	for(int j=0; j<dim; j++) {
 				mask[i][j] = false;
 	    	}
-		}
-		mask[1][1] = true;
+		}*/
+		/*mask[1][1] = true;
 		mask[4][1] = true;
 		mask[1][4] = true;
-		mask[4][4] = true;
+		mask[4][4] = true;*/
 
 		/*testing background*/
-		Background bkg = new Background(matrix, mask, 0.0, 3, 3, 1, 1, 0.0);
+		/*Background bkg = new Background(matrix, mask, 0.0, 3, 3, 1, 1, 0.0);
 		System.out.println("JAVA: Backmap: "+bkg.backmap.globalback+"\t globalrms: "+bkg.backmap.globalrms);
 		System.out.println("JAVA: Backmap: w: "+bkg.backmap.w+"\t h: "+bkg.backmap.h);
 		System.out.println("JAVA: Backmap: bw: "+bkg.backmap.bw+"\t h: "+bkg.backmap.bh);
@@ -506,10 +555,10 @@ public class Background {
     			System.out.print(back[i][j]+", ");
     		}
     		System.out.println("");
-    	}
+    	}*/
 
     	/*testing aperture with different dtypes*/
-    	double pi = 3.14159;
+    	/*double pi = 3.14159;
     	int dim = 1000;
     	int naper = dim;
     	double r = 3;
@@ -519,13 +568,13 @@ public class Background {
     	for(int i=0; i<dim; i++){
     		x[i] = random.nextDouble()*(800-200)+200.0;
     		y[i] = random.nextDouble()*(800-200)+200.0;
-    	}
+    	}*/
 
     	/*for(int i=0; i<dim; i++){
 			System.out.print(x[i]+", ");
     	}
     	System.out.println("");*/
-    	double[][] matrix2 = new double[dim][dim];
+    	/*double[][] matrix2 = new double[dim][dim];
     	for(int i=0; i<dim; i++){
     		for(int j=0; j<dim; j++){
     			matrix2[i][j] = 1.0;
@@ -533,7 +582,7 @@ public class Background {
     	}
 
 		System.out.println("=========sep_sum_circle()=========");
-    	bkg.sum_circle(matrix2, x, y, r, null, 5);*/
+    	bkg.sum_circle(matrix2, x, y, r, null, 5);
 
     	System.out.println("=========sep_sum_ellipse()=========");
     	bkg.sum_ellipse(matrix2, x, x, 0.3, 0.3, 0.0, r, null, 5);
@@ -559,7 +608,26 @@ public class Background {
 
     	System.out.println("=========sep_sum_ellipse() with bkgann=========");
     	double[] bkgann = new double[]{0.0, 5.0};
-    	bkg.sum_ellipse(matrix2, x, y, 2.0, 1.0, pi/4, r, bkgann, 1);
+    	bkg.sum_ellipse(matrix2, x, y, 2.0, 1.0, pi/4, r, bkgann, 1);*/
 
+
+    	System.out.println("=========extract() with noise array=========");
+    	double[][] matrix = Fits.load("/Users/zhaozhang/projects/scratch/java/test/data/image.fits");
+    	boolean[][] mask = new boolean[0][0];
+    	Background bkg = new Background(matrix, mask, 0.0, 64, 64, 3, 3, 0.0);
+    	/*System.out.print("JAVA: main: matrix[0]: ");
+    	for(int i=0; i<dim; i++)
+    		System.out.print(bkg.matrix[0][i]+", ");
+    	System.out.println("");*/
+    	bkg.printBkg();
+    	System.out.println("============================================");
+    	bkg.subfrom(matrix);
+    	bkg.printBkg();
+
+    	
+    	
+    	//for(int i=0; i<dim; i++)
+    	//	System.out.print(bkg.matrix[0][i]+", ");
+    	//System.out.println("");
     }
 }

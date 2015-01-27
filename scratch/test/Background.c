@@ -342,3 +342,32 @@ JNIEXPORT jint JNICALL Java_Background_sep_1sum_1ellipann
   }
   return status;
 }
+
+JNIEXPORT jint JNICALL Java_Background_sep_1subbackarray
+  (JNIEnv *env, jobject obj, jobject bkgmap, jobjectArray data, jint dtype, jfloatArray back, jfloatArray dback, jfloatArray sigma, jfloatArray dsigma)
+{
+  int len = (*env)->GetArrayLength(env, data);
+  jbyte *array = (jbyte *)(*env)->GetByteArrayElements(env, data, NULL);
+
+  jclass cls = (*env)->GetObjectClass(env, bkgmap);
+  assert(cls != NULL);
+
+  int backLen = (*env)->GetArrayLength(env, back);
+  sepbackmap *p = (sepbackmap *)malloc(sizeof(sepbackmap));
+  p->back = malloc(sizeof(float)*backLen);
+  p->dback = malloc(sizeof(float)*backLen);
+  p->sigma = malloc(sizeof(float)*backLen);  
+  p->dsigma = malloc(sizeof(float)*backLen);
+
+  sep_back_java_c(env, cls, bkgmap, p, back, dback, sigma, dsigma);
+
+  printf("C sep_subbackarray: %d\t%d\t%f\t%f\t%d\t%d\n", p->w, p->h, p->globalback, p->globalrms, p->bw, p->bh);
+  printf("C sep_subbackarray: nx: %d \t ny: %d \t n: %d\n", p->nx, p->ny, p->n);
+  printf("C sep_subbackarray: back: %f \t dback: %f\n", *(p->back), *(p->dback));
+  printf("C sep_subbackarray: sigma: %f \t dsigma: %f\n", *(p->sigma), *(p->dsigma));
+
+  int status = sep_subbackarray(p, array, dtype);
+  (*env)->SetByteArrayRegion(env, data, 0, len, array);
+
+  return status;
+}
