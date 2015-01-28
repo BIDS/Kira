@@ -134,14 +134,14 @@ public class Background {
     public native int sep_sum_ellipse(byte[] data, byte[] error, byte[] mask, 
 				      int dtype, int edtype, int mdtype, int w, int h, 
 				      double maskthresh, double gain, short inflags, 
-				      double x[], double y[], double a, double b, 
-				      double theta, double r, int subpix, double[] sum, 
+				      double x[], double y[], double[] a, double[] b, 
+				      double[] theta, double r, int subpix, double[] sum, 
 				      double[] sumerr, double[] area, short[] flag);
 
     public native int sep_sum_ellipann(byte[] data, byte[] error, byte[] mask, 
 				       int dtype, int edtype, int mdtype, int w, int h, 
 				       double maskthresh, double gain, short inflags, 
-				       double[] x, double[] y, double a, double[] b, 
+				       double[] x, double[] y, double[] a, double[] b, 
 				       double[] theta, double rin, double rout, int subpix, 
 				       double[] sum, double[] sumerr, double[] area, short[] flag);
 
@@ -289,13 +289,13 @@ public class Background {
     	}
     	System.out.println("");*/
     }
-    public void sum_ellipse(double[][] matrix, double[] x, double[] y, double a, double b, double theta, double r, double[] bkgann, int subpix){
+    public void sum_ellipse(double[][] matrix, double[] x, double[] y, double[] a, double[] b, double[] theta, double r, double[] bkgann, int subpix){
     	float var = (float)0.0;
     	float err = (float)0.0;
     	float gain = (float)0.0;
     	double[][] mask = null;
     	double maskthresh = 0.0;
-
+        /*need to implement the case where error is not null*/
     	/*manually setting the parameters below*/
     	int dtype = SEP_TDOUBLE;
     	int edtype = 0;
@@ -331,12 +331,8 @@ public class Background {
     		short[] bkgflag = new short[x.length];
     		double rin = bkgann[0];
     		double rout = bkgann[1];
-    		double[] barray = new double[x.length];
-    		Arrays.fill(barray, b);
-    		double[] thetaarray = new double[x.length];
-    		Arrays.fill(thetaarray, theta);
 
-    		status = sep_sum_ellipann(ptr, eptr, mptr, dtype, edtype, mdtype, w, h, maskthresh, gain, inflag, x, y, a, barray, thetaarray, rin, rout, subpix, bkgflux, bkgfluxerr, bkgarea, bkgflag);    				    	
+    		status = sep_sum_ellipann(ptr, eptr, mptr, dtype, edtype, mdtype, w, h, maskthresh, gain, inflag, x, y, a, b, theta, rin, rout, subpix, bkgflux, bkgfluxerr, bkgarea, bkgflag);    				    	
 	    	
 	    	for(int i=0; i<x.length; i++){
 	    		sum[i] = flux1[i] - bkgflux[i]/bkgarea[i]*area1[i];
@@ -346,13 +342,13 @@ public class Background {
 		}    
 
     	System.out.print("sum: ");
-    	for(int i=0; i<10; i++){
+    	for(int i=0; i<sum.length; i++){
     		System.out.print(sum[i]+", ");
     	}
     	System.out.println("");
     }
 
-    public void sum_ellipann(double[][] matrix, double[] x, double[] y, double a, double[] b, double[] theta, double rin, double rout, int subpix){
+    public void sum_ellipann(double[][] matrix, double[] x, double[] y, double[] a, double[] b, double[] theta, double rin, double rout, int subpix){
     	float var = (float)0.0;
     	float err = (float)0.0;
     	float gain = (float)0.0;
@@ -380,19 +376,17 @@ public class Background {
     	double[] sumerr = new double[x.length];
     	double[] area = new double[x.length];
     	short[] flag = new short[x.length];
-    	/*this is the case where bkgann is null*/
 
     	
 	    int status = sep_sum_ellipann(ptr, eptr, mptr, dtype, edtype, mdtype, w, h, maskthresh, gain, inflag, x, y, a, b, theta, rin, rout, subpix, sum, sumerr, area, flag);
 	    
 
-    	/*System.out.print("sum: ");
+    	System.out.print("sum: ");
     	for(int i=0; i<x.length; i++){
     		System.out.print(sum[i]+", ");
     	}
-    	System.out.println("");*/
+    	System.out.println("");
 
-    	/*Will turn back to the case where bkgann is not null later*/
     }
 
     public double[][] subfrom(double[][] matrix){
@@ -665,7 +659,7 @@ public class Background {
     	double r = 3;
     	double[] x = new double[dim];
     	double[] y = new double[dim];
-    	Random random = new Random();
+    	//Random random = new Random();
     	for(int i=0; i<dim; i++){
     		x[i] = random.nextDouble()*(800-200)+200.0;
     		y[i] = random.nextDouble()*(800-200)+200.0;
@@ -681,12 +675,16 @@ public class Background {
     			matrix2[i][j] = 1.0;
     		}
     	}
+        double[] aa = new double[dim];
+        Arrays.fill(aa, 0.3);
+        double[] tt = new double[dim];
+        Arrays.fill(tt, 0.0);
 
 		System.out.println("=========sep_sum_circle()=========");
     	bkg.sum_circle(matrix2, x, y, r, null, 5);
 
     	System.out.println("=========sep_sum_ellipse()=========");
-    	bkg.sum_ellipse(matrix2, x, x, 0.3, 0.3, 0.0, r, null, 5);
+    	bkg.sum_ellipse(matrix2, x, x, aa, aa, tt, r, null, 5);
 
     	System.out.println("=========sep_sum_circann()=========");
     	bkg.sum_circann(matrix2, x, y, 0.0, 3.0);
@@ -694,14 +692,16 @@ public class Background {
     	System.out.println("=========sep_sum_ellipann()=========");
     	double[] theta = new double[dim];
     	double[] ratio = new double[dim];
+        double[] a = new double[dim];
     	for(int i=0; i<dim; i++){
+            a[i] = 1.0;
     		theta[i] = random.nextDouble()*(pi)-pi/2;
     		ratio[i] = random.nextDouble()*(0.8)+0.2;
     	}
     	double rin = 3.0;
     	double rout = rin * 1.1;
 
-    	bkg.sum_ellipann(matrix2, x, y, 1.0, ratio, theta, rin, rout, 0);
+    	bkg.sum_ellipann(matrix2, x, y, a, ratio, theta, rin, rout, 0);
 
     	System.out.println("=========sep_sum_circle() with bkgann=========");
     	double[] bkgann = new double[]{0.0, 5.0};
@@ -717,18 +717,22 @@ public class Background {
         //double[][] matrix = Fits.load("/Users/zhaozhang/projects/Montage/m101/rawdir/2mass-atlas-990214n-j1200244.fits");
     	boolean[][] mask = new boolean[0][0];
     	Background bkg = new Background(matrix, mask, 0.0, 64, 64, 3, 3, 0.0);
-    	//System.out.print("JAVA: main: matrix[0]: ");
+    	
+        //System.out.print("JAVA: main: matrix[0]: ");
     	//for(int i=0; i<dim; i++)
     	//	System.out.print(matrix[0][i]+", ");
     	//System.out.println("");
     	//bkg.printBkg();
-    	System.out.println("============================================");
+    	
+        System.out.println("============================================");
     	matrix = bkg.subfrom(matrix);
-    	//bkg.printBkg();
+    	
+        //bkg.printBkg();
        	//for(int i=0; i<dim; i++)
     	//	System.out.print(matrix[0][i]+", ");
     	//System.out.println("");
-    	double[][] noise = null;
+    	
+        double[][] noise = null;
     	double[][] conv = new double[][]{{1.0, 2.0, 1.0}, {2.0, 4.0, 2.0}, {1.0, 2.0, 1.0}};
     	Sepobj[] objects = bkg.extract(matrix, (float)1.5*bkg.backmap.globalrms, noise, conv);
     	System.out.println("JAVA: exrtact() detects "+objects.length+" objects");
@@ -796,5 +800,12 @@ public class Background {
             System.out.print(kr[i]+", ");
         }
         System.out.println("");
+
+        System.out.println("=========sep_sum_ellipse()=========");
+        for(int i=0; i<r.length; i++){
+            r[i] = 2.5*kr[i];
+        }
+        bkg.sum_ellipse(matrix, x, y, a, b, theta, 5.0, null, 1);
+
     }
 }
