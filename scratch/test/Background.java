@@ -295,7 +295,7 @@ public class Background {
     	float gain = (float)0.0;
     	double[][] mask = null;
     	double maskthresh = 0.0;
-        /*need to implement the case where error is not null*/
+        /*need to implement the case where ƒ is not null*/
     	/*manually setting the parameters below*/
     	int dtype = SEP_TDOUBLE;
     	int edtype = 0;
@@ -400,6 +400,7 @@ public class Background {
     }
 
     public Sepobj[] extract(double[][] matrix, float thresh, double[][] noise, double[][] conv){
+        //need to implement the noise parsing function and parse it to sep_extract()
     	int minarea = 5;
     	//double[][] conv = new double[3][3]{{1.0, 2.0, 1.0}, {2.0, 4.0, 2.0}, {1.0, 2.0, 1.0}};
     	int deblend_nthresh = 32;
@@ -588,8 +589,9 @@ public class Background {
 	}
 
     public static void main (String[] args) {
-    	/*int dim = 128;
+
     	Random random = new Random();
+        /*int dim = 128;
 		double[][] matrix = new double[dim][dim];
 		for(int i=0; i<dim; i++) {
 	    	for(int j=0; j<dim; j++) {
@@ -732,7 +734,13 @@ public class Background {
     	//	System.out.print(matrix[0][i]+", ");
     	//System.out.println("");
     	
-        double[][] noise = null;
+        double[][] noise = new double[matrix.length][matrix[0].length];
+        for(int i=0; i<matrix.length; i++){
+            for(int j=0; j<matrix[i].length; j++){
+                noise[i][j] = 1.0;
+            }
+        }
+
     	double[][] conv = new double[][]{{1.0, 2.0, 1.0}, {2.0, 4.0, 2.0}, {1.0, 2.0, 1.0}};
     	Sepobj[] objects = bkg.extract(matrix, (float)1.5*bkg.backmap.globalrms, noise, conv);
     	System.out.println("JAVA: exrtact() detects "+objects.length+" objects");
