@@ -35,25 +35,25 @@ void sep_back_c_java(JNIEnv *env, jclass cls, jobject obj, jclass bkmapcls, jobj
   jfieldID id_n = (*env)->GetFieldID(env, bkmapcls, "n", "I"); 
   (*env)->SetIntField(env, bkmap, id_n, p->n);
 
-  jmethodID setBackID = (*env)->GetMethodID(env, cls, "setBack", "([F)V");
+  jmethodID setBackID = (*env)->GetMethodID(env, bkmapcls, "setBack", "([F)V");
   jfloatArray backArray = (*env)->NewFloatArray(env, p->n);
   (*env)->SetFloatArrayRegion(env, backArray, 0, p->n, p->back);
-  (*env)->CallVoidMethod(env, obj, setBackID, backArray);
+  (*env)->CallVoidMethod(env, bkmap, setBackID, backArray);
 
-  jmethodID setDbackID = (*env)->GetMethodID(env, cls, "setDback", "([F)V");
+  jmethodID setDbackID = (*env)->GetMethodID(env, bkmapcls, "setDback", "([F)V");
   jfloatArray dbackArray = (*env)->NewFloatArray(env, p->n);
   (*env)->SetFloatArrayRegion(env, dbackArray, 0, p->n, p->dback);
-  (*env)->CallVoidMethod(env, obj, setDbackID, dbackArray);
+  (*env)->CallVoidMethod(env, bkmap, setDbackID, dbackArray);
 
-  jmethodID setSigmaID = (*env)->GetMethodID(env, cls, "setSigma", "([F)V");
+  jmethodID setSigmaID = (*env)->GetMethodID(env, bkmapcls, "setSigma", "([F)V");
   jfloatArray sigmaArray = (*env)->NewFloatArray(env, p->n);
   (*env)->SetFloatArrayRegion(env, sigmaArray, 0, p->n, p->sigma);
-  (*env)->CallVoidMethod(env, obj, setSigmaID, sigmaArray);
+  (*env)->CallVoidMethod(env, bkmap, setSigmaID, sigmaArray);
 
-  jmethodID setDsigmaID = (*env)->GetMethodID(env, cls, "setDsigma", "([F)V");
+  jmethodID setDsigmaID = (*env)->GetMethodID(env, bkmapcls, "setDsigma", "([F)V");
   jfloatArray dsigmaArray = (*env)->NewFloatArray(env, p->n);
   (*env)->SetFloatArrayRegion(env, dsigmaArray, 0, p->n, p->dsigma);
-  (*env)->CallVoidMethod(env, obj, setDsigmaID, dsigmaArray);
+  (*env)->CallVoidMethod(env, bkmap, setDsigmaID, dsigmaArray);
 }
 
 void sep_back_java_c(JNIEnv *env, jclass bkmapcls, jobject bkmap, sepbackmap *p, jfloatArray back, jfloatArray dback, jfloatArray sigma, jfloatArray dsigma){
@@ -154,7 +154,7 @@ JNIEXPORT jint JNICALL Java_Background_sep_1makeback
   /*Finding the sepbackmap field in the Background class*/
   jclass cls = (*env)->GetObjectClass(env, obj);
   assert(cls != NULL);
-  jfieldID id_bkmap = (*env)->GetFieldID(env, cls, "backmap", "LBackground$Sepbackmap;"); 
+  jfieldID id_bkmap = (*env)->GetFieldID(env, cls, "bkgmap", "LSepbackmap;"); 
   assert(id_bkmap != NULL);
   jobject bkmap = (*env)->GetObjectField(env, obj, id_bkmap);
   assert(bkmap != NULL);
