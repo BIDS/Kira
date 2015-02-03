@@ -76,7 +76,7 @@ class Background(matrix:Array[Array[Double]], mask:Array[Array[Boolean]]=null, m
 }
 
 object Test{
-	 def backTest(){
+	def backTest(){
     val dim:Int = 6
     var matrix = Array.ofDim[Double](dim, dim)
     for(i <- (0 until matrix.length)){
