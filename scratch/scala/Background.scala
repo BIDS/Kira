@@ -1,7 +1,8 @@
-import java.lang.{Double =>jDouble}
+import util.Random
 
-class Background(matrix:Array[Array[Double]], mask:Array[Array[Boolean]], maskthresh:Double, 
-  bw:Int, bh:Int, fw:Int, fh:Int, fthresh:Double){
+
+class Background(matrix:Array[Array[Double]], mask:Array[Array[Boolean]]=null, maskthresh:Double=0.0, 
+  bw:Int=64, bh:Int=64, fw:Int=3, fh:Int=3, fthresh:Double=0.0){
 	/**Macro definitions from sep.h*/
 	val SEP_TBYTE :Int = 11
 	val SEP_TINT :Int = 31
@@ -31,8 +32,7 @@ class Background(matrix:Array[Array[Double]], mask:Array[Array[Boolean]], maskth
   System.loadLibrary("BackgroundImpl")
   var bkgmap = new Sepbackmap()
 
-  val data: Array[Byte] = flatten(matrix)
-  println(data.mkString(" "))
+  val data: Array[Byte] = Utils.flatten(matrix)
   val h = matrix.length
   val w = matrix(0).length
   val status = sep_makeback(data, mask, SEP_TDOUBLE, SEP_TBYTE, w, h, bw, bh, 0.0, fw, fh, 0.0, bkgmap)
@@ -42,78 +42,43 @@ class Background(matrix:Array[Array[Double]], mask:Array[Array[Boolean]], maskth
   def sep_makeback(data:Array[Byte], mask:Array[Array[Boolean]], dtype:Int, mdtype:Int, 
     w:Int, h:Int, bw:Int, bh:Int, mthresh:Double, fw:Int, fh:Int, fthresh:Double, backmap:Sepbackmap):Int
 
-	def flatten(matrix:Array[Array[Double]]):Array[Byte] = {
-    val h = matrix.length
-    val w = matrix(0).length
-    var stream = new Array[Byte](w*h*8)
+  @native
+  def sep_backarray(bkgmap:Sepbackmap, data:Array[Byte], dtype:Int, back:Array[Float], dback:Array[Float], 
+    sigma:Array[Float], dsigma:Array[Float]):Int
 
-    for(i <- (0 until h)){
-      for(j <- (0 until w)){
-        var l: Long = jDouble.doubleToLongBits(matrix(i)(j))
-        println(matrix(i)(j))
-        println(l)
-        for(k <- (0 until 8)){
-          stream((i*w+j)*8+k) = ((l >>> (k * 8)) & 0xff).toByte
-        }
-      }
+  @native
+  def sep_subbackarray(bkgmap:Sepbackmap, data:Array[Byte], dtype:Int, 
+    back:Array[Float], dback:Array[Float], sigma:Array[Float], dsigma:Array[Float]):Int
+
+  def back(dtype:Int):Array[Array[Double]] = {
+    var result = Array.ofDim[Double](bkgmap.h, bkgmap.w)
+    var data = new Array[Byte](bkgmap.h*bkgmap.w*8)
+    val status = sep_backarray(bkgmap, data, dtype, bkgmap.back, bkgmap.dback, bkgmap.sigma, bkgmap.dsigma)
+    println("Scala: back: return: "+status)
+    result = Utils.deflatten(data, bkgmap.h, bkgmap.w)
+    for(r <- result){
+      println(r.mkString(", "))
     }
-    stream
+    return result
   }
 
-
-   
-}
-
-class Sepbackmap(var w:Int, var h:Int, var globalback:Float, var globalrms:Float, var bw:Int, 
-  var bh:Int, var nx:Int, var ny:Int, var n:Int, var back:Array[Float], var dback:Array[Float], 
-  var sigma:Array[Float], var dsigma:Array[Float]){
-  back = new Array[Float](n)
-  dback = new Array[Float](n)
-  sigma = new Array[Float](n)
-  dsigma = new Array[Float](n)
-
-  def this(){
-    this(0, 0, 0.0F, 0.0F, 0, 0, 0, 0, 0, null, null, null, null)
-  }
-
-  def setBack(vback: Array[Float]){
-    back = new Array[Float](vback.length)
-    for(i <- (0 until back.length)){
-      back(i) = vback(i)
+  def subfrom(matrix:Array[Array[Double]]): Array[Array[Double]] = {
+    /**need to check the shape of the matrices*/
+    var data = Utils.flatten(matrix)
+    val status = sep_subbackarray(bkgmap, data, SEP_TDOUBLE, bkgmap.back, bkgmap.dback, bkgmap.sigma, bkgmap.dsigma)
+    var result = Utils.deflatten(data, matrix.length, matrix(0).length)
+    println("Scala: subfrom: result: ")
+    for(r <- result){
+      println(r.mkString(", "))
     }
-  }
-
-  def setDback(vdback: Array[Float]){
-    dback = new Array[Float](vdback.length)
-    for(i <- (0 until dback.length)){
-      dback(i) = vdback(i)
-    }
-  }
-
-  def setSigma(vsigma: Array[Float]){
-    sigma = new Array[Float](vsigma.length)
-    for(i <- (0 until sigma.length)){
-      sigma(i) = vsigma(i)
-    }
-  }
-
-  def setDsigma(vdsigma: Array[Float]){
-    dsigma = new Array[Float](vdsigma.length)
-    for(i <- (0 until dsigma.length)){
-      dsigma(i) = vdsigma(i)
-    }
+    return result
   }
 }
-
-class Sepobj(thresh:Double, npix:Int, tnpix:Int, xmin:Int, xmax:Int,
-  ymin:Int, ymax:Int, x:Double, y:Double, x2:Double, y2:Double, 
-  xy:Double, a:Float, b:Float, theta:Float, cxx:Float, cyy:Float,
-  cxy:Float, cflux:Float, cpeak:Float, peak:Float, xpeak:Float, ypeak:Float,
-  xcpeak:Float, ycpeak:Float, flag:Short, pix:Int)
 
 object Test{
-	def main(args: Array[String]){
-    var matrix = Array.ofDim[Double](6, 6)
+	 def backTest(){
+    val dim:Int = 6
+    var matrix = Array.ofDim[Double](dim, dim)
     for(i <- (0 until matrix.length)){
       for(j <- (0 until matrix(i).length)){
         matrix(i)(j) = 0.1
@@ -124,17 +89,15 @@ object Test{
     matrix(4)(1) = 1.0
     matrix(4)(4) = 1.0
 
-    var mask = Array.ofDim[Boolean](6, 6)
+    var mask = Array.ofDim[Boolean](dim, dim)
     for(i <- (0 until mask.length)){
       for(j <- (0 until mask(i).length)){
         mask(i)(j) = false
       }
     }
 
-    for(r <- matrix)
-      println(r.mkString(" "))
-
     var bkg = new Background(matrix, mask, 0.0, 3, 3, 1, 1, 0.0)
+    //var bkg = new Background(matrix)
     println("Scala: bkgmap: globalback: "+bkg.bkgmap.globalback+"\t globalrms:"+bkg.bkgmap.globalrms)
     println("Scala: bkgmap: w: "+bkg.bkgmap.w+"\t h: "+bkg.bkgmap.h);
     println("Scala: bkgmap: bw: "+bkg.bkgmap.bw+"\t h: "+bkg.bkgmap.bh);
@@ -143,5 +106,78 @@ object Test{
     println("Scala: bkgmap: dback: "+bkg.bkgmap.dback.mkString(", "))
     println("Scala: bkgmap: sigma: "+bkg.bkgmap.sigma.mkString(", "))
     println("Scala: bkgmap: dsigma: "+bkg.bkgmap.dsigma.mkString(", "))
+    var result = bkg.back(bkg.SEP_TDOUBLE)
+    result = bkg.subfrom(result)
+  }
+
+  def sumCircleTest(){
+    val ex = new Extractor
+    val naper = 1000
+    val x = Array.fill(naper)(Random.nextDouble*(800-200)+200.0)
+    val y = Array.fill(naper)(Random.nextDouble*(800-200)+200.0)
+    val r = 3.0
+    val matrix = Array.fill[Double](naper, naper){1.0}
+    val mask = Array.fill[Boolean](naper, naper){false}
+
+    println("==================sum_circle() test================")
+    val (sum, sumerr, flag) = ex.sum_circle(matrix, x, y, r)
+    println("Scala: sum_circle result: ")
+    println(sum.take(10).mkString(", "))
+
+    println("==================sum_circann() test================")
+    val (sum2, sumerr2, flag2) = ex.sum_circann(matrix, x, y, 0.0, r)
+    println("Scala: sum_circle result: ")
+    println(sum2.take(10).mkString(", "))
+
+    println("==================sum_circle() with bkgann test================")
+    val bkgann = Array(6.0, 8.0)
+    val (sum3, sumerr3, flag3) = ex.sum_circle(matrix, x, y, r, bkgann=bkgann, subpix=1)
+    println("Scala: sum_circle with bkgann result: ")
+    println(sum3.take(10).mkString(", "))
+  }
+
+  def sumEllipseTest(){
+    val ex = new Extractor
+    val naper = 1000
+    val x = Array.fill(naper)(Random.nextDouble*(800-200)+200.0)
+    val y = Array.fill(naper)(Random.nextDouble*(800-200)+200.0)
+    var r = 3.0
+    val matrix = Array.fill[Double](naper, naper){1.0}
+    val mask = Array.fill[Boolean](naper, naper){false}
+    val aa = Array.fill[Double](naper){1.0}
+    val tt = Array.fill[Double](naper){0.0}
+
+    println("==================sum_ellipse() test================")
+    val (sum, sumerr, flag) = ex.sum_ellipse(matrix, x, x, aa, aa, tt, r)
+    println("Scala: sum_ellipse result: ")
+    println(sum.take(10).mkString(", "))
+
+    println("==================sum_ellipann() test================")
+    val pi = 3.1415926
+    var a = Array.fill(naper)(1.0)
+    val theta = Array.fill(naper)(Random.nextDouble*pi - pi/2)
+    val ratio = Array.fill(naper)(Random.nextDouble*0.8 + 0.2)
+    val rin = 3.0
+    val rout = rin * 1.1
+    val (sum1, sumerr1, flag1) = ex.sum_ellipann(matrix, x, y, a, ratio, theta, rin, rout, subpix=0)
+    println("Scala: sum_ellipann result: ")
+    println(sum1.take(10).mkString(", "))
+
+    println("==================sum_ellipann() with bkgann test================")
+    a = Array.fill(naper)(2.0)
+    val b = Array.fill(naper)(1.0)
+    val t = Array.fill(naper)(pi/4)
+    r = 5.0
+    val bkgann = Array(6.0, 8.0)
+
+    val (sum2, sumerr2, flag2) = ex.sum_ellipse(matrix, x, y, a, b, t, r, bkgann=bkgann)
+    println("Scala: sum_ellipse with bkgann result: ")
+    println(sum2.take(10).mkString(", "))
+  }
+
+  def main(args: Array[String]){
+    //backTest()
+    sumCircleTest()
+    sumEllipseTest()
   }
 }

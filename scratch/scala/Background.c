@@ -113,24 +113,24 @@ JNIEXPORT jint JNICALL Java_Background_sep_1makeback
   int len = (*env)->GetArrayLength(env, data);
   jbyte *array = (jbyte *)(*env)->GetByteArrayElements(env, data, NULL);
 
-  int mlen1 = (*env)->GetArrayLength(env, maskdata);
-  printf("mlen1: %d\n", mlen1);
   jboolean *mask;
-  if(mlen1 == 0){
+  jbooleanArray dim = NULL;
+  jbooleanArray oneDim = NULL;
+  if(maskdata == NULL){
     mask = (void *)NULL;
-  }
+  }  
   else{
-    /*parse the matrix*/
-    jbooleanArray dim = (jbooleanArray)(*env)->GetObjectArrayElement(env, maskdata, 0);
+    /*parse the mask matrix*/
+    int mlen1 = (*env)->GetArrayLength(env, maskdata);
+    dim = (jbooleanArray)(*env)->GetObjectArrayElement(env, maskdata, 0);
     int mlen2 = (*env)->GetArrayLength(env, dim);
     printf("mlen2: %d\n", mlen2);
     mask = malloc(sizeof(jboolean)* mlen1 * mlen2);
     for(int i=0; i<mlen1; i++){
-      jbooleanArray oneDim= (jbooleanArray)(*env)->GetObjectArrayElement(env, maskdata, i);
+      oneDim = (jbooleanArray)(*env)->GetObjectArrayElement(env, maskdata, i);
       jboolean *element=(*env)->GetBooleanArrayElements(env, oneDim, 0);
-      //mask[i] = malloc(sizeof(jboolean)*mlen2);
       memcpy(mask+i*mlen2, element, sizeof(jboolean)*mlen2);
-   }
+    }
   }
 
 
@@ -189,6 +189,11 @@ JNIEXPORT jint JNICALL Java_Background_sep_1makeback
   free(array);
   free(p);
 
+  if(mask != NULL){
+    printf("C makeback: free mask\n");
+    free(mask);
+  }
+
   return status;
 }
 
@@ -233,7 +238,7 @@ JNIEXPORT jint JNICALL Java_Background_sep_1backarray
   return status;
 }
 
-JNIEXPORT jint JNICALL Java_Background_sep_1sum_1circle
+/*JNIEXPORT jint JNICALL Java_Background_sep_1sum_1circle
   (JNIEnv *env, jobject obj, jbyteArray data, jbyteArray error, jbyteArray mask, jint dtype, jint edtype, jint mdtype, jint w, jint h, jdouble maskthresh, jdouble gain, jshort inflag, jdoubleArray x, jdoubleArray y, jdouble r, jint subpix, jdoubleArray sum, jdoubleArray sumerr, jdoubleArray area, jshortArray flag)
 {
   jbyte *array = (jbyte *)(*env)->GetByteArrayElements(env, data, NULL);
@@ -258,9 +263,9 @@ JNIEXPORT jint JNICALL Java_Background_sep_1sum_1circle
     (*env)->SetShortArrayRegion(env, flag, i, 1, &dflag);
   }
   return status;
-}
+}*/
 
-JNIEXPORT jint JNICALL Java_Background_sep_1sum_1ellipse
+/*JNIEXPORT jint JNICALL Java_Background_sep_1sum_1ellipse
   (JNIEnv *env, jobject obj, jbyteArray data, jbyteArray error, jbyteArray mask, jint dtype, jint edtype, jint mdtype, jint w, jint h, jdouble maskthresh, jdouble gain, jshort inflag, jdoubleArray x, jdoubleArray y, jdoubleArray a, jdoubleArray b, jdoubleArray theta, jdouble r, jint subpix, jdoubleArray sum, jdoubleArray sumerr, jdoubleArray area, jshortArray flag)
 {
   jbyte *array = (jbyte *)(*env)->GetByteArrayElements(env, data, NULL);
@@ -288,9 +293,9 @@ JNIEXPORT jint JNICALL Java_Background_sep_1sum_1ellipse
     (*env)->SetShortArrayRegion(env, flag, i, 1, &dflag);
   }
   return status;
-}
+}*/
 
-JNIEXPORT jint JNICALL Java_Background_sep_1sum_1circann
+/*JNIEXPORT jint JNICALL Java_Background_sep_1sum_1circann
   (JNIEnv *env, jobject obj, jbyteArray data, jbyteArray error, jbyteArray mask, jint dtype, jint edtype, jint mdtype, jint w, jint h, jdouble maskthresh, jdouble gain, jshort inflag, jdoubleArray x, jdoubleArray y, jdouble rin, jdouble rout, jint subpix, jdoubleArray sum, jdoubleArray sumerr, jdoubleArray area, jshortArray flag)
 {
   jbyte *array = (jbyte *)(*env)->GetByteArrayElements(env, data, NULL);
@@ -315,9 +320,9 @@ JNIEXPORT jint JNICALL Java_Background_sep_1sum_1circann
     (*env)->SetShortArrayRegion(env, flag, i, 1, &dflag);
   }
   return status;
-}
+}*/
 
-JNIEXPORT jint JNICALL Java_Background_sep_1sum_1ellipann
+/*JNIEXPORT jint JNICALL Java_Background_sep_1sum_1ellipann
   (JNIEnv *env, jobject obj, jbyteArray data, jbyteArray error, jbyteArray mask, jint dtype, jint edtype, jint mdtype, jint w, jint h, jdouble maskthresh, jdouble gain, jshort inflag, jdoubleArray x, jdoubleArray y, jdoubleArray a, jdoubleArray b, jdoubleArray theta, jdouble rin, jdouble rout, jint subpix, jdoubleArray sum, jdoubleArray sumerr, jdoubleArray area, jshortArray flag)
 {
   jbyte *array = (jbyte *)(*env)->GetByteArrayElements(env, data, NULL);
@@ -345,7 +350,7 @@ JNIEXPORT jint JNICALL Java_Background_sep_1sum_1ellipann
     (*env)->SetShortArrayRegion(env, flag, i, 1, &dflag);
   }
   return status;
-}
+}*/
 
 JNIEXPORT jint JNICALL Java_Background_sep_1subbackarray
   (JNIEnv *env, jobject obj, jobject bkgmap, jobjectArray data, jint dtype, jfloatArray back, jfloatArray dback, jfloatArray sigma, jfloatArray dsigma)
@@ -372,6 +377,13 @@ JNIEXPORT jint JNICALL Java_Background_sep_1subbackarray
 
   int status = sep_subbackarray(p, array, dtype);
   (*env)->SetByteArrayRegion(env, data, 0, len, array);
+
+  /*printf("C sep_subbackarray: result\n"); 
+  double *dp = (double *)array;
+  for(int i=0; i<len/8; i++){
+    printf("%f, ", dp[i]);
+  }
+  printf("\n");*/
 
   return status;
 }
