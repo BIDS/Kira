@@ -64,6 +64,18 @@ class Extractor{
     convw:Int, convh:Int, deblend_nthresh:Int, deblend_cont:Double, clean_flag:Boolean,
     clean_param:Double, objects:Array[Sepobj], nobj:Int):Int
 
+  @native
+  def sep_kron_radius(data:Array[Byte], mask:Array[Byte], dtype:Int, mdtype:Int,
+    w:Int, h:Int, maskthresh:Double, x:Array[Double], y:Array[Double], 
+    cxx:Array[Double], cyy:Array[Double], cxy:Array[Double], r:Array[Double], 
+    kronrad:Array[Double], flag:Array[Short])
+
+  @native
+  def sep_ellipse_coeffs(a:Array[Double], b:Array[Double], theta:Array[Double], cxx:Array[Double], cyy:Array[Double], cxy:Array[Double])
+
+  @native
+  def sep_ellipse_axes(cxx:Array[Double], cyy:Array[Double], cxy:Array[Double], a:Array[Double], b:Array[Double], theta:Array[Double])
+
   def sum_circle(matrix:Array[Array[Double]], x:Array[Double], y:Array[Double], r:Double, 
     variance:Array[Array[Double]]=null, err:Array[Array[Double]]=null, gain:Double=0.0, mask:Array[Array[Double]]=null, 
     maskthresh:Double=0.0, bkgann:Array[Double]=null, subpix:Int=5):(Array[Double], Array[Double], Array[Short]) = {
@@ -230,8 +242,8 @@ class Extractor{
   }
 
   val default_conv = Array(Array(1.0, 2.0, 1.0), Array(2.0, 4.0, 2.0), Array(1.0, 2.0, 1.0))
-  def extract(matrix:Array[Array[Double]], thresh:Float, noise:Array[Array[Double]], minarea:Int=5, 
-    conv:Array[Array[Double]]=default_conv, deblend_nthresh:Int=32, deblend_cont:Double=0.05, 
+  def extract(matrix:Array[Array[Double]], thresh:Float, noise:Array[Array[Double]]=null, minarea:Int=5, 
+    conv:Array[Array[Double]]=default_conv, deblend_nthresh:Int=32, deblend_cont:Double=0.005, 
     clean:Boolean=true, clean_param:Double=1.0):Array[Sepobj]={
     val dtype = SEP_TDOUBLE
     val ndtype = SEP_TDOUBLE
@@ -255,5 +267,44 @@ class Extractor{
       retobjs(i) = objects(i)
     }
     return retobjs
+  }
+
+  def kron_radius(matrix:Array[Array[Double]], x:Array[Double], y:Array[Double], a:Array[Double], 
+    b:Array[Double], theta:Array[Double], r:Array[Double], mask:Array[Array[Double]]=null, 
+    maskthresh:Double=0.0):(Array[Double], Array[Short]) = {
+    val data = Utils.flatten(matrix)
+    val mstream = if(mask == null) null else Utils.flatten(mask)
+    val mdtype = if(mask == null) 0 else SEP_TBYTE
+
+    val (cxx, cyy, cxy) = ellipse_coeffs(a, b, theta)
+
+    val h = matrix.length
+    val w = matrix(0).length
+    var kr = Array.ofDim[Double](a.length)
+    var flag = Array.ofDim[Short](a.length)
+
+    sep_kron_radius(data, mstream, SEP_TDOUBLE, mdtype, w, h, maskthresh, x, y, cxx, cyy, cxy, r, kr, flag)
+
+    return (kr, flag)
+  }
+
+  def ellipse_coeffs(a:Array[Double], b:Array[Double], theta:Array[Double]):(Array[Double], Array[Double], Array[Double]) = {
+    var cxx = Array.ofDim[Double](a.length)
+    var cyy = Array.ofDim[Double](a.length)
+    var cxy = Array.ofDim[Double](a.length)
+
+    sep_ellipse_coeffs(a, b, theta, cxx, cyy, cxy)
+
+    return(cxx, cyy, cxy)
+  }
+
+  def ellipse_axes(cxx:Array[Double], cyy:Array[Double], cxy:Array[Double]):(Array[Double], Array[Double], Array[Double]) = {
+    var a = Array.ofDim[Double](cxx.length)
+    var b = Array.ofDim[Double](cxx.length)
+    var theta = Array.ofDim[Double](cxx.length)
+
+    sep_ellipse_axes(cxx, cyy, cxy, a, b, theta)
+
+    return(a, b, theta)
   }
 }

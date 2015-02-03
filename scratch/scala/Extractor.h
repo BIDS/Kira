@@ -47,6 +47,30 @@ JNIEXPORT jint JNICALL Java_Extractor_sep_1sum_1ellipann
 JNIEXPORT jint JNICALL Java_Extractor_sep_1extract
   (JNIEnv *, jobject, jbyteArray, jbyteArray, jint, jint, jshort, jint, jint, jfloat, jint, jbyteArray, jint, jint, jint, jdouble, jboolean, jdouble, jobjectArray, jint);
 
+/*
+ * Class:     Extractor
+ * Method:    sep_kron_radius
+ * Signature: ([B[BIIIID[D[D[D[D[D[D[D[S)V
+ */
+JNIEXPORT void JNICALL Java_Extractor_sep_1kron_1radius
+  (JNIEnv *, jobject, jbyteArray, jbyteArray, jint, jint, jint, jint, jdouble, jdoubleArray, jdoubleArray, jdoubleArray, jdoubleArray, jdoubleArray, jdoubleArray, jdoubleArray, jshortArray);
+
+/*
+ * Class:     Extractor
+ * Method:    sep_ellipse_coeffs
+ * Signature: ([D[D[D[D[D[D)V
+ */
+JNIEXPORT void JNICALL Java_Extractor_sep_1ellipse_1coeffs
+  (JNIEnv *, jobject, jdoubleArray, jdoubleArray, jdoubleArray, jdoubleArray, jdoubleArray, jdoubleArray);
+
+/*
+ * Class:     Extractor
+ * Method:    sep_ellipse_axes
+ * Signature: ([D[D[D[D[D[D)V
+ */
+JNIEXPORT void JNICALL Java_Extractor_sep_1ellipse_1axes
+  (JNIEnv *, jobject, jdoubleArray, jdoubleArray, jdoubleArray, jdoubleArray, jdoubleArray, jdoubleArray);
+
 #ifdef __cplusplus
 }
 #endif

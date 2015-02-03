@@ -56,9 +56,9 @@ class Background(matrix:Array[Array[Double]], mask:Array[Array[Boolean]]=null, m
     val status = sep_backarray(bkgmap, data, dtype, bkgmap.back, bkgmap.dback, bkgmap.sigma, bkgmap.dsigma)
     println("Scala: back: return: "+status)
     result = Utils.deflatten(data, bkgmap.h, bkgmap.w)
-    for(r <- result){
+    /*for(r <- result){
       println(r.mkString(", "))
-    }
+    }*/
     return result
   }
 
@@ -67,10 +67,10 @@ class Background(matrix:Array[Array[Double]], mask:Array[Array[Boolean]]=null, m
     var data = Utils.flatten(matrix)
     val status = sep_subbackarray(bkgmap, data, SEP_TDOUBLE, bkgmap.back, bkgmap.dback, bkgmap.sigma, bkgmap.dsigma)
     var result = Utils.deflatten(data, matrix.length, matrix(0).length)
-    println("Scala: subfrom: result: ")
+    /*println("Scala: subfrom: result: ")
     for(r <- result){
       println(r.mkString(", "))
-    }
+    }*/
     return result
   }
 }
@@ -176,23 +176,127 @@ object Test{
   }
 
   def extractTest(){
-    println("==================sep_extract() with noise test================")
+    println("==================sep_extract() with noise without conv test 1================")
     val ex = new Extractor
     var matrix:Array[Array[Double]] = Utils.load("/Users/zhaozhang/projects/scratch/java/test/data/image.fits")
     val bkg = new Background(matrix)
     matrix = bkg.subfrom(matrix)
     val noise = Array.fill[Double](matrix.length, matrix(0).length)(1.0)
-    val objects:Array[Sepobj] = ex.extract(matrix, (1.5*bkg.bkgmap.globalrms).toFloat, noise)
+    val objects:Array[Sepobj] = ex.extract(matrix, (1.5*bkg.bkgmap.globalrms).toFloat, conv=null)
+    println("Scala: extract: extracted "+objects.length+" objects")
+    for(i <- (0 until objects.length)){
+      println("objects: "+i+"\tx: "+objects(i).x+"\ty: "+objects(i).y+"\tflux: "+objects(i).flux)
+    }
+
+    println("==================sep_extract() with noise without conv test 2================")
+    val objects2 = ex.extract(matrix, (1.5*bkg.bkgmap.globalrms).toFloat, noise=noise, conv=null)
+    println("Scala: extract: extracted "+objects2.length+" objects")
+    for(i <- (0 until objects2.length)){
+      println("objects2: "+i+"\tx: "+objects2(i).x+"\ty: "+objects2(i).y+"\tflux: "+objects2(i).flux)
+    }
+
+    /**The following test fails, as the extract function returns 7, which is from the sortit function in extract.c*/
+    /*println("==================sep_extract() with noise test without conv test 3================")
+    val noise2 = Array.fill[Double](matrix.length, matrix(0).length)(bkg.bkgmap.globalrms)
+    val objects3 = ex.extract(matrix, 1.5F, noise=noise2, conv=null)
+    println("Scala: extract: extracted "+objects3.length+" objects")
+    for(i <- (0 until objects3.length)){
+      println("object3: "+i+"\tx: "+objects3(i).x+"\ty: "+objects3(i).y+"\tflux: "+objects3(i).flux)
+    }*/
+    println("==================sep_extract() without noise with conv test 1================")
+    val objects4 = ex.extract(matrix, (1.5*bkg.bkgmap.globalrms).toFloat)
+    println("Scala: extract: extracted "+objects4.length+" objects")
+    for(i <- (0 until objects4.length)){
+      println("objects4: "+i+"\tx: "+objects4(i).x+"\ty: "+objects4(i).y+"\tflux: "+objects4(i).flux)
+    }
+
+    println("==================sep_extract() with noise with conv test 1================")
+    val objects5 = ex.extract(matrix, (1.5*bkg.bkgmap.globalrms).toFloat, noise=noise)
+    println("Scala: extract: extracted "+objects5.length+" objects")
+    for(i <- (0 until objects5.length)){
+      println("objects5: "+i+"\tx: "+objects5(i).x+"\ty: "+objects5(i).y+"\tflux: "+objects5(i).flux)
+    }
+  }
+
+  def ellipseTest(){
+    val ex = new Extractor
+    var matrix:Array[Array[Double]] = Utils.load("/Users/zhaozhang/projects/scratch/java/test/data/image.fits")
+    val bkg = new Background(matrix)
+    matrix = bkg.subfrom(matrix)
+    val noise = Array.fill[Double](matrix.length, matrix(0).length)(1.0)
+    val objects:Array[Sepobj] = ex.extract(matrix, (1.5*bkg.bkgmap.globalrms).toFloat)
     println("Scala: extract: extracted "+objects.length+" objects")
 
+    println("==================ellipse_test() test 1 ellipse_coeffs()================")
+    var a:Array[Double] = Array.ofDim[Double](objects.length)
+    var b:Array[Double] = Array.ofDim[Double](objects.length)
+    var theta:Array[Double] = Array.ofDim[Double](objects.length)
+
     for(i <- (0 until objects.length)){
-      println("object: "+i+"\tx: "+objects(i).x+"\ty: "+objects(i).y+"\tflux: "+objects(i).flux)
+      a(i) = objects(i).a
+      b(i) = objects(i).b
+      theta(i) = objects(i).theta
     }
+
+    var (cxx, cyy, cxy) = ex.ellipse_coeffs(a, b, theta)
+
+    for(i <- (0 until 10))
+      println("cxx: "+cxx(i)+"\tcyy: "+cyy(i)+"\tcxy: "+cxy(i))
+
+    println("==================ellipse_test() test 1 ellipse_axes()================")  
+    var xx:Array[Double] = Array.ofDim[Double](objects.length)
+    var yy:Array[Double] = Array.ofDim[Double](objects.length)
+    var xy:Array[Double] = Array.ofDim[Double](objects.length)
+    for(i <- (0 until objects.length)){
+      xx(i) = objects(i).cxx
+      yy(i) = objects(i).cyy
+      xy(i) = objects(i).cxy
+    }
+
+    var (aa, bb, tt) = ex.ellipse_axes(xx, yy, xy)
+    for(i <- (0 until 10))
+      println("a: "+aa(i)+"\tb: "+bb(i)+"\ttheta: "+tt(i))
+
+    println("==================ellipse_test() test 1 round_trip()================")
+    var (cxx1, cyy1, cxy1) = ex.ellipse_coeffs(aa, bb, tt)  
+    for(i <- (0 until 10))
+      println("cxx: "+cxx1(i)+"\tcyy: "+cyy1(i)+"\tcxy: "+cxy1(i))
+  }
+
+  def kron_radiusTest(){
+    val ex = new Extractor
+    var matrix:Array[Array[Double]] = Utils.load("/Users/zhaozhang/projects/scratch/java/test/data/image.fits")
+    val bkg = new Background(matrix)
+    matrix = bkg.subfrom(matrix)
+    val noise = Array.fill[Double](matrix.length, matrix(0).length)(1.0)
+    val objects:Array[Sepobj] = ex.extract(matrix, (1.5*bkg.bkgmap.globalrms).toFloat)
+    println("Scala: extract: extracted "+objects.length+" objects")
+
+    var x:Array[Double] = Array.ofDim[Double](objects.length)
+    var y:Array[Double] = Array.ofDim[Double](objects.length)
+    var a:Array[Double] = Array.ofDim[Double](objects.length)
+    var b:Array[Double] = Array.ofDim[Double](objects.length)
+    var theta:Array[Double] = Array.ofDim[Double](objects.length)
+    var r:Array[Double] = Array.fill(objects.length){6.0}
+
+    for(i <- (0 until objects.length)){
+      x(i) = objects(i).x
+      y(i) = objects(i).y
+      a(i) = objects(i).a
+      b(i) = objects(i).b
+      theta(i) = objects(i).theta
+    }
+
+    var (kr, flag) = ex.kron_radius(matrix, x, y, a, b, theta, r)
+    for(i <- (0 until 10))
+      println("kr: "+kr(i)+"\tflag: "+flag(i))
   }
   def main(args: Array[String]){
     //backTest()
     //sumCircleTest()
     //sumEllipseTest()
     extractTest()
+    //ellipseTest()
+    //kron_radiusTest()
   }
 }
