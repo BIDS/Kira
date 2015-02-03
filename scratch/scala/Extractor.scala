@@ -58,6 +58,12 @@ class Extractor{
     theta:Array[Double], rin:Double, rout:Double, subpix:Int, sum:Array[Double],
     sumerr:Array[Double], area:Array[Double], flag:Array[Short]):Int
 
+  @native
+  def sep_extract(data:Array[Byte], noise:Array[Byte], dtype:Int, ndtype:Int, 
+    noise_flag:Short, w:Int, h:Int, thresh:Float, minarea:Int, conv:Array[Byte],
+    convw:Int, convh:Int, deblend_nthresh:Int, deblend_cont:Double, clean_flag:Boolean,
+    clean_param:Double, objects:Array[Sepobj], nobj:Int):Int
+
   def sum_circle(matrix:Array[Array[Double]], x:Array[Double], y:Array[Double], r:Double, 
     variance:Array[Array[Double]]=null, err:Array[Array[Double]]=null, gain:Double=0.0, mask:Array[Array[Double]]=null, 
     maskthresh:Double=0.0, bkgann:Array[Double]=null, subpix:Int=5):(Array[Double], Array[Double], Array[Short]) = {
@@ -214,16 +220,40 @@ class Extractor{
     return (sum, sumerr, flag)
   }
 
-//object Test{
-  def main(args: Array[String]){
-    val naper = 1000
-    val x = Array.fill(naper)(Random.nextDouble*(800-200)+200.0)
-    val y = Array.fill(naper)(Random.nextDouble*(800-200)+200.0)
-    val r = 3.0
-    val matrix = Array.fill[Double](naper, naper){1.0}
-    val mask = Array.fill[Boolean](naper, naper){false}
-    var ex = new Extractor
-    val (sum, sumerr, flag) = ex.sum_circle(matrix, x, y, r)
-    println(sum.mkString(", "))
+  def init_obj(thresh:Double, npix:Int, tnpix:Int, xmin:Int, xmax:Int, ymin:Int, ymax:Int, x:Double, y:Double, x2:Double, y2:Double, 
+    xy:Double, a:Float, b:Float, theta:Float, cxx:Float, cyy:Float, cxy:Float, cflux:Float, flux:Float, cpeak:Float, peak:Float, xpeak:Int, ypeak:Int, 
+      xcpeak:Int, ycpeak:Int, flag:Short, pix:Int):Sepobj = {
+    var obj = new Sepobj(thresh, npix, tnpix, xmin, xmax, ymin, ymax, 
+      x, y, x2, y2, xy, a, b, theta, cxx, cyy, cxy, cflux, flux, cpeak, peak, 
+      xpeak, ypeak, xcpeak, ycpeak, flag, pix)
+    return obj  
+  }
+
+  val default_conv = Array(Array(1.0, 2.0, 1.0), Array(2.0, 4.0, 2.0), Array(1.0, 2.0, 1.0))
+  def extract(matrix:Array[Array[Double]], thresh:Float, noise:Array[Array[Double]], minarea:Int=5, 
+    conv:Array[Array[Double]]=default_conv, deblend_nthresh:Int=32, deblend_cont:Double=0.05, 
+    clean:Boolean=true, clean_param:Double=1.0):Array[Sepobj]={
+    val dtype = SEP_TDOUBLE
+    val ndtype = SEP_TDOUBLE
+
+    val h = matrix.length
+    val w = matrix(0).length
+    val data = Utils.flatten(matrix)
+
+    val convh = if(conv == null) 0 else conv.length
+    val convw = if(conv == null) 0 else conv(0).length
+    val cstream = if(conv == null) null else Utils.flatten(conv)
+
+    val nstream = if(noise == null) null else Utils.flatten(noise)
+
+    var objects:Array[Sepobj] = Array.ofDim[Sepobj](8192)
+    val nobj = sep_extract(data, nstream, dtype, ndtype, 0.toShort, w, h, thresh,
+      minarea, cstream, convw, convh, deblend_nthresh, deblend_cont, clean, clean_param, objects, 0)
+
+    var retobjs = Array.ofDim[Sepobj](nobj)
+    for(i <- (0 until nobj)){
+      retobjs(i) = objects(i)
+    }
+    return retobjs
   }
 }

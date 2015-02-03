@@ -76,7 +76,7 @@ class Background(matrix:Array[Array[Double]], mask:Array[Array[Boolean]]=null, m
 }
 
 object Test{
-	def backTest(){
+  def backTest(){
     val dim:Int = 6
     var matrix = Array.ofDim[Double](dim, dim)
     for(i <- (0 until matrix.length)){
@@ -175,9 +175,24 @@ object Test{
     println(sum2.take(10).mkString(", "))
   }
 
+  def extractTest(){
+    println("==================sep_extract() with noise test================")
+    val ex = new Extractor
+    var matrix:Array[Array[Double]] = Utils.load("/Users/zhaozhang/projects/scratch/java/test/data/image.fits")
+    val bkg = new Background(matrix)
+    matrix = bkg.subfrom(matrix)
+    val noise = Array.fill[Double](matrix.length, matrix(0).length)(1.0)
+    val objects:Array[Sepobj] = ex.extract(matrix, (1.5*bkg.bkgmap.globalrms).toFloat, noise)
+    println("Scala: extract: extracted "+objects.length+" objects")
+
+    for(i <- (0 until objects.length)){
+      println("object: "+i+"\tx: "+objects(i).x+"\ty: "+objects(i).y+"\tflux: "+objects(i).flux)
+    }
+  }
   def main(args: Array[String]){
     //backTest()
-    sumCircleTest()
-    sumEllipseTest()
+    //sumCircleTest()
+    //sumEllipseTest()
+    extractTest()
   }
 }

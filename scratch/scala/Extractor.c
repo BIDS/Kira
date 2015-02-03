@@ -118,3 +118,48 @@ JNIEXPORT jint JNICALL Java_Extractor_sep_1sum_1ellipann
   }
   return status;
 }
+
+JNIEXPORT jint JNICALL Java_Extractor_sep_1extract
+  (JNIEnv *env, jobject obj, jbyteArray data, jbyteArray nstream, jint dtype, jint ndtype, jshort noise_flag, jint w, jint h, jfloat thresh, jint minarea, jbyteArray cstream, jint convw, jint convh, jint deblend_nthresh, jdouble deblend_cont, jboolean clean_flag, jdouble clean_param, jobjectArray objects, jint nobj)
+{
+  jbyte *marray = (jbyte *)(*env)->GetByteArrayElements(env, data, NULL);  
+ 
+  
+  jfloat *conv = NULL;
+  printf("C sep_extract: convw: %d, convh: %d\n", convw, convh);
+  if(convw !=0 && convh != 0)
+  { 
+    jbyte *carray = (jbyte *)(*env)->GetByteArrayElements(env, cstream, NULL);  
+    conv = (jfloat *)malloc(sizeof(float)*convw*convh);
+    double *dp = (double *)carray;
+    for(int i=0; i<convw*convh; i++){
+      conv[i] = *(dp++);
+      //printf("conv[%d]: %f\n", i, conv[i]);
+    }
+  }
+
+  jbyte *narray = NULL;
+  if(nstream != NULL){
+    printf("C sep_extract: nstream is null\n");
+    jbyte *narray = (jbyte *)(*env)->GetByteArrayElements(env, nstream, NULL);
+  }
+
+  sepobj *objs;
+
+  int status = sep_extract(marray, narray, dtype, ndtype, noise_flag, w, h, thresh, minarea, conv, convw, convh, deblend_nthresh, deblend_cont, clean_flag, clean_param, &objs, &nobj);
+  printf("C sep_extract: status: %d\n", status);
+
+  /*for(int i=0; i<nobj; i++)
+    printf("Number: %d\t X_IMAGE: %f\t Y_IMAGE: %f\n", i, objs[i].x, objs[i].y);*/
+
+  jclass cls = (*env)->GetObjectClass(env, obj);
+  assert(cls != NULL);
+  jmethodID consID = (*env)->GetMethodID(env, cls, "init_obj", "(DIIIIIIDDDDDFFFFFFFFFFIIIISI)LSepobj;");
+  assert(consID != NULL);
+
+  for(int i=0; i<nobj; i++){
+    jobject sepobj = (*env)->CallObjectMethod(env, obj, consID, objs[i].thresh, objs[i].npix, objs[i].tnpix, objs[i].xmin, objs[i].xmax, objs[i].ymin, objs[i].ymax, objs[i].x, objs[i].y, objs[i].x2, objs[i].y2, objs[i].xy, objs[i].a, objs[i].b, objs[i].theta, objs[i].cxx, objs[i].cyy, objs[i].cxy, objs[i].cflux, objs[i].flux, objs[i].cpeak, objs[i].peak, objs[i].xcpeak, objs[i].ycpeak, objs[i].xpeak, objs[i].ypeak, objs[i].flag);
+    (*env)->SetObjectArrayElement(env, objects, i, sepobj);
+  }
+  return nobj;
+}

@@ -39,6 +39,14 @@ JNIEXPORT jint JNICALL Java_Extractor_sep_1sum_1ellipse
 JNIEXPORT jint JNICALL Java_Extractor_sep_1sum_1ellipann
   (JNIEnv *, jobject, jbyteArray, jbyteArray, jbyteArray, jint, jint, jint, jint, jint, jdouble, jdouble, jshort, jdoubleArray, jdoubleArray, jdoubleArray, jdoubleArray, jdoubleArray, jdouble, jdouble, jint, jdoubleArray, jdoubleArray, jdoubleArray, jshortArray);
 
+/*
+ * Class:     Extractor
+ * Method:    sep_extract
+ * Signature: ([B[BIISIIFI[BIIIDZD[LSepobj;I)I
+ */
+JNIEXPORT jint JNICALL Java_Extractor_sep_1extract
+  (JNIEnv *, jobject, jbyteArray, jbyteArray, jint, jint, jshort, jint, jint, jfloat, jint, jbyteArray, jint, jint, jint, jdouble, jboolean, jdouble, jobjectArray, jint);
+
 #ifdef __cplusplus
 }
 #endif
