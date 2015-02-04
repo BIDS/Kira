@@ -76,6 +76,10 @@ class Extractor{
   @native
   def sep_ellipse_axes(cxx:Array[Double], cyy:Array[Double], cxy:Array[Double], a:Array[Double], b:Array[Double], theta:Array[Double])
 
+  @native
+  def sep_set_ellipse(data:Array[Byte], w:Int, h:Int, x:Array[Double], y:Array[Double], cxx:Array[Double],
+    cyy:Array[Double], cxy:Array[Double], r:Array[Double], value:Byte)
+
   def sum_circle(matrix:Array[Array[Double]], x:Array[Double], y:Array[Double], r:Double, 
     variance:Array[Array[Double]]=null, err:Array[Array[Double]]=null, gain:Double=0.0, mask:Array[Array[Double]]=null, 
     maskthresh:Double=0.0, bkgann:Array[Double]=null, subpix:Int=5):(Array[Double], Array[Double], Array[Short]) = {
@@ -242,6 +246,7 @@ class Extractor{
   }
 
   val default_conv = Array(Array(1.0, 2.0, 1.0), Array(2.0, 4.0, 2.0), Array(1.0, 2.0, 1.0))
+
   def extract(matrix:Array[Array[Double]], thresh:Float, noise:Array[Array[Double]]=null, minarea:Int=5, 
     conv:Array[Array[Double]]=default_conv, deblend_nthresh:Int=32, deblend_cont:Double=0.005, 
     clean:Boolean=true, clean_param:Double=1.0):Array[Sepobj]={
@@ -306,5 +311,30 @@ class Extractor{
     sep_ellipse_axes(cxx, cyy, cxy, a, b, theta)
 
     return(a, b, theta)
+  }
+
+  def mask_ellipse(matrix:Array[Array[Boolean]], x:Array[Double], y:Array[Double], a:Array[Double]=null, b:Array[Double]=null,
+    theta:Array[Double]=null, r:Array[Double]):Array[Array[Boolean]]={
+    val h = matrix.length
+    val w = matrix(0).length
+
+    var data = Array.ofDim[Byte](w*h)
+    for(i <- (0 until matrix.length)){
+      for(j <- (0 until matrix(0).length)){
+        data(i*w+j) = 0.toByte;
+      }
+    }
+
+    var cxx = Array.ofDim[Double](a.length)
+    var cyy = Array.ofDim[Double](a.length)
+    var cxy = Array.ofDim[Double](a.length)
+    sep_ellipse_coeffs(a, b, theta, cxx, cyy, cxy)
+    sep_set_ellipse(data, w, h, x, y, cxx, cyy, cxy, r, 1.toByte) 
+
+    var retmatrix = Array.ofDim[Boolean](h, w)
+    for(i <- (0 until data.length)){
+      retmatrix(i/w)(i%h) = if(data(i) == 0) false else true
+    }
+    return retmatrix   
   }
 }

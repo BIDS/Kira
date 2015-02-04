@@ -176,11 +176,12 @@ object Test{
   }
 
   def extractTest(){
-    println("==================sep_extract() with noise without conv test 1================")
     val ex = new Extractor
     var matrix:Array[Array[Double]] = Utils.load("/Users/zhaozhang/projects/scratch/java/test/data/image.fits")
     val bkg = new Background(matrix)
     matrix = bkg.subfrom(matrix)
+
+    println("==================sep_extract() with noise without conv test 1================")
     val noise = Array.fill[Double](matrix.length, matrix(0).length)(1.0)
     val objects:Array[Sepobj] = ex.extract(matrix, (1.5*bkg.bkgmap.globalrms).toFloat, conv=null)
     println("Scala: extract: extracted "+objects.length+" objects")
@@ -195,14 +196,16 @@ object Test{
       println("objects2: "+i+"\tx: "+objects2(i).x+"\ty: "+objects2(i).y+"\tflux: "+objects2(i).flux)
     }
 
-    /**The following test fails, as the extract function returns 7, which is from the sortit function in extract.c*/
-    /*println("==================sep_extract() with noise test without conv test 3================")
+    /**The following test fails, as the extract function returns 7, which is from the sortit function in extract.c.
+    Decrease the deblend_nthresh to 8 works for the test image.
+    */
+    println("==================sep_extract() with noise test without conv test 3================")
     val noise2 = Array.fill[Double](matrix.length, matrix(0).length)(bkg.bkgmap.globalrms)
-    val objects3 = ex.extract(matrix, 1.5F, noise=noise2, conv=null)
+    val objects3 = ex.extract(matrix, 1.5F, noise=noise2, deblend_nthresh=8, conv=null)
     println("Scala: extract: extracted "+objects3.length+" objects")
     for(i <- (0 until objects3.length)){
       println("object3: "+i+"\tx: "+objects3(i).x+"\ty: "+objects3(i).y+"\tflux: "+objects3(i).flux)
-    }*/
+    }
     println("==================sep_extract() without noise with conv test 1================")
     val objects4 = ex.extract(matrix, (1.5*bkg.bkgmap.globalrms).toFloat)
     println("Scala: extract: extracted "+objects4.length+" objects")
@@ -291,12 +294,32 @@ object Test{
     for(i <- (0 until 10))
       println("kr: "+kr(i)+"\tflag: "+flag(i))
   }
+
+  def mask_ellipseTest(){
+    val ex = new Extractor
+    var mask = Array.fill[Boolean](20, 20){false}
+    val x = Array.fill(1){10.0}
+    val y = Array.fill(1){10.0}
+    val a = Array.fill(1){1.0}
+    val b = Array.fill(1){1.0}
+    val theta = Array.fill(1){0.0}
+    val r = Array.fill(1){1.001}
+    println("==================mask_ellipseTest() test 1================")
+    val retmatrix = ex.mask_ellipse(mask, x, y, a=a, b=b, theta=theta, r)    
+    println(retmatrix.map(r=>(r.map(x => if(x==true) 1 else 0).reduce(_+_))).reduce(_+_))
+
+    println("==================mask_ellipseTest() test 2================")  
+    val r2 = Array.fill(1){2.001}
+    val retmatrix2 = ex.mask_ellipse(mask, x, y, a=a, b=b, theta=theta, r2) 
+    println(retmatrix2.map(r=>(r.map(x => if(x==true) 1 else 0).reduce(_+_))).reduce(_+_))
+  }
   def main(args: Array[String]){
     //backTest()
     //sumCircleTest()
     //sumEllipseTest()
-    extractTest()
+    //extractTest()
     //ellipseTest()
     //kron_radiusTest()
+    mask_ellipseTest()
   }
 }

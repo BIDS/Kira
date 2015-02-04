@@ -235,3 +235,24 @@ JNIEXPORT void JNICALL Java_Extractor_sep_1kron_1radius
   (*env)->SetDoubleArrayRegion(env, kr, 0, len, kr_array);
   (*env)->SetShortArrayRegion(env, flag, 0, len, flag_array);
 }  
+
+JNIEXPORT void JNICALL Java_Extractor_sep_1set_1ellipse
+  (JNIEnv *env, jobject obj, jbyteArray data, jint w, jint h, jdoubleArray x, jdoubleArray y, jdoubleArray cxx, jdoubleArray cyy, jdoubleArray cxy, jdoubleArray r, jbyte value)
+{
+  jbyte *array = (jbyte *)(*env)->GetByteArrayElements(env, data, NULL);  
+  int len = (*env)->GetArrayLength(env, x);
+  jdouble *x_array = (jdouble *)(*env)->GetDoubleArrayElements(env, x, 0);
+  jdouble *y_array = (jdouble *)(*env)->GetDoubleArrayElements(env, y, 0);
+  jdouble *cxx_array = (jdouble *)(*env)->GetDoubleArrayElements(env, cxx, 0);
+  jdouble *cyy_array = (jdouble *)(*env)->GetDoubleArrayElements(env, cyy, 0);
+  jdouble *cxy_array = (jdouble *)(*env)->GetDoubleArrayElements(env, cxy, 0);  
+  jdouble *r_array = (jdouble *)(*env)->GetDoubleArrayElements(env, r, 0);
+
+  for(int i=0; i<len; i++){
+    sep_set_ellipse((unsigned char *)array, w, h, x_array[i], y_array[i], cxx_array[i], cyy_array[i], cxy_array[i], r_array[i], value);
+    //sep_set_ellipse((unsigned char *)array, 20, 20, 10.0, 10.0, 1.0, 1.0, 0.0, 1.001, 1);
+  }
+
+  int alen = (*env)->GetArrayLength(env, data);
+  (*env)->SetByteArrayRegion(env, data, 0, alen, array);
+}  

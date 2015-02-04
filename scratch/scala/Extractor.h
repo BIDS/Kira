@@ -71,6 +71,14 @@ JNIEXPORT void JNICALL Java_Extractor_sep_1ellipse_1coeffs
 JNIEXPORT void JNICALL Java_Extractor_sep_1ellipse_1axes
   (JNIEnv *, jobject, jdoubleArray, jdoubleArray, jdoubleArray, jdoubleArray, jdoubleArray, jdoubleArray);
 
+/*
+ * Class:     Extractor
+ * Method:    sep_set_ellipse
+ * Signature: ([BII[D[D[D[D[D[DB)V
+ */
+JNIEXPORT void JNICALL Java_Extractor_sep_1set_1ellipse
+  (JNIEnv *, jobject, jbyteArray, jint, jint, jdoubleArray, jdoubleArray, jdoubleArray, jdoubleArray, jdoubleArray, jdoubleArray, jbyte);
+
 #ifdef __cplusplus
 }
 #endif
