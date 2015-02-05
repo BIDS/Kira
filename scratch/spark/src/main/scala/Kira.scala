@@ -9,18 +9,33 @@ object Kira {
     val sc = new SparkContext(conf)
 
     val src = "/Users/zhaozhang/projects/scratch/Kira/data"
-    val flist = new File(src).listFiles.filter(_.getName.endsWith(".fits"))
+    val dflist = new File(src).listFiles.filter(_.getName.endsWith(".fits"))
 
-    val results = flist.map(f => filter(f.toString))
-    val num = results.reduce(_ + _)
-    println("Spark: " + num + " objects were detected")
+    //val dflist = sc.parallelize(flist)
+    val results = dflist.map(f => extract(f.toString))
+    //val num = results.reduce(_ + _)
+    //println("Spark: " + num + " objects were detected")
+    //println(results.count)
+    results.map(x => x.map(r => println(r._1 + "\t" + r._2 + "\t" + r._3 + "\t" + r._4 + "\t" + r._5)))
   }
-  def filter(path: String): Int = {
+  def extract(path: String): Array[(Double, Double, Double, Double, Short)] = {
     var matrix = Utils.load(path)
     var bkg = new Background(matrix)
     matrix = bkg.subfrom(matrix)
     val ex = new Extractor
     val objects = ex.extract(matrix, (1.5 * bkg.bkgmap.globalrms).toFloat)
-    return objects.length
+    //return objects.length
+    var x: Array[Double] = Array.ofDim[Double](objects.length)
+    var y: Array[Double] = Array.ofDim[Double](objects.length)
+    for (i <- (0 until objects.length)) {
+      x(i) = objects(i).x
+      y(i) = objects(i).y
+    }
+
+    var err: Array[Array[Double]] = Array.fill(matrix.length, matrix(0).length) { bkg.bkgmap.globalrms }
+
+    val (flux, fluxerr, flag) = ex.sum_circle(matrix, x, y, 5.0, err = err)
+    val retArray = (0 until objects.length).map(i => (x(i), y(i), flux(i), fluxerr(i), flag(i))).toArray
+    return retArray
   }
 }
