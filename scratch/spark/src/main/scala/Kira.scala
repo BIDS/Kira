@@ -9,14 +9,16 @@ object Kira {
     val sc = new SparkContext(conf)
 
     val src = "/Users/zhaozhang/projects/scratch/Kira/data"
-    val dflist = new File(src).listFiles.filter(_.getName.endsWith(".fits"))
+    val flist = new File(src).listFiles.filter(_.getName.endsWith(".fits"))
 
-    //val dflist = sc.parallelize(flist)
+    val dflist = sc.parallelize(flist)
     val results = dflist.map(f => extract(f.toString))
     //val num = results.reduce(_ + _)
     //println("Spark: " + num + " objects were detected")
-    //println(results.count)
-    results.map(x => x.map(r => println(r._1 + "\t" + r._2 + "\t" + r._3 + "\t" + r._4 + "\t" + r._5)))
+
+    val flatresults = results.flatMap(p => p.map(r => (r._1, r._2, r._3, r._4, r._5)))
+    println("count: " + flatresults.count)
+    flatresults.saveAsTextFile("output")
   }
   def extract(path: String): Array[(Double, Double, Double, Double, Short)] = {
     var matrix = Utils.load(path)
