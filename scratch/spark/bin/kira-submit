@@ -60,7 +60,7 @@ gatherSparkSubmitOpts "$@"
 # submit the job to Spark
 "$SPARK_SUBMIT" \
   --class Kira \
-  --master local-cluster[4,1,1024] \
+  --master local-cluster[2,1,1024] \
   --jars "$KIRA_JARS" \
   "${SUBMISSION_OPTS[@]}" \
   "$KIRA_JAR" \

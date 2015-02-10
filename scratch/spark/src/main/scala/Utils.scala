@@ -1,5 +1,6 @@
 import java.lang.{ Double => jDouble }
 import java.nio.ByteBuffer
+import java.io._
 import org.eso.fits._
 
 object Utils {
@@ -47,6 +48,35 @@ object Utils {
     // build and populate an array
     var matrix = Array.ofDim[Float](nrow, ncol)
     (0 until nrow).map(i => dm.getFloatValues(i * ncol, ncol, matrix(i)))
+
+    println("matrix: height: " + nrow + "\twidth: " + ncol)
+
+    var rmatrix = Array.ofDim[Double](nrow, ncol)
+    for (i <- (0 until nrow)) {
+      for (j <- (0 until ncol)) {
+        rmatrix(i)(j) = matrix(i)(j).toDouble
+      }
+    }
+
+    return rmatrix
+  }
+
+  def load_byte(content: Array[Byte]): Array[Array[Double]] = {
+    val is = new ByteArrayInputStream(content)
+    val dis = new DataInputStream(is)
+    val file = new FitsFile(dis, true)
+    val hdu: FitsHDUnit = file.getHDUnit(0)
+    val dm: FitsMatrix = hdu.getData().asInstanceOf[FitsMatrix]
+    val naxis: Array[Int] = dm.getNaxis()
+    val ncol = naxis(0)
+    val nval = dm.getNoValues()
+    val nrow = nval / ncol
+    println("nrow: " + nrow + "\t ncol:" + ncol)
+    // build and populate an array
+    var matrix = Array.ofDim[Float](nrow, ncol)
+    (0 until nrow).map(i => dm.getFloatValues(i * ncol, ncol, matrix(i)))
+
+    println("matrix: height: " + nrow + "\twidth: " + ncol)
 
     var rmatrix = Array.ofDim[Double](nrow, ncol)
     for (i <- (0 until nrow)) {
