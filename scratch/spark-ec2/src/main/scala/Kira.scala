@@ -8,13 +8,13 @@ object Kira {
     val conf = new SparkConf().setAppName("Kira")
     val sc = new SparkContext(conf)
 
-    val src = "/root/Kira/scratch/spark-ec2/data"
+    val src = args(0)
 
     val flist = sc.binaryFiles(src)
     val results = flist.map(c => extract_str(c._2.toArray))
     val flatresults = results.flatMap(p => p.map(r => (r._1, r._2, r._3, r._4, r._5)))
-    println("count: " + flatresults.count)
-    flatresults.saveAsTextFile("output")
+
+    flatresults.saveAsTextFile(args(1))
     /*val flist = new File(src).listFiles.filter(_.getName.endsWith(".fits"))
 
     val dflist = sc.parallelize(flist)
