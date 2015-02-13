@@ -26,8 +26,8 @@ class Extractor {
 
   /**Macro definition from sepcore.h*/
   val MEMORY_ALLOC_ERROR: Int = 1
-  System.loadLibrary("BackgroundImpl")
-  //System.load("/Users/zhaozhang/projects/scratch/Kira/src/main/scala/libBackgroundImpl.jnilib")
+  //System.loadLibrary("BackgroundImpl")
+  System.load("/Users/zhaozhang/projects/scratch/Kira/src/main/scala/libBackgroundImpl.jnilib")
 
   @native
   def sep_sum_circle(data: Array[Byte], err: Array[Byte], mask: Array[Byte],
@@ -48,7 +48,7 @@ class Extractor {
                       dtype: Int, edtype: Int, mdtype: Int, w: Int, h: Int,
                       maskthresh: Double, gain: Double, inflags: Short,
                       x: Array[Double], y: Array[Double], a: Array[Double], b: Array[Double],
-                      theta: Array[Double], r: Double, subpix: Int, sum: Array[Double],
+                      theta: Array[Double], r: Array[Double], subpix: Int, sum: Array[Double],
                       sumerr: Array[Double], area: Array[Double], flag: Array[Short]): Int
 
   @native
@@ -157,7 +157,7 @@ class Extractor {
   }
 
   def sum_ellipse(matrix: Array[Array[Double]], x: Array[Double], y: Array[Double], a: Array[Double], b: Array[Double],
-                  theta: Array[Double], r: Double,
+                  theta: Array[Double], r: Array[Double],
                   variance: Array[Array[Double]] = null, err: Array[Array[Double]] = null, gain: Double = 0.0, mask: Array[Array[Double]] = null,
                   maskthresh: Double = 0.0, bkgann: Array[Double] = null, subpix: Int = 5): (Array[Double], Array[Double], Array[Short]) = {
     val dtype = SEP_TDOUBLE

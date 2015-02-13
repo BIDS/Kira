@@ -29,7 +29,7 @@ JNIEXPORT jint JNICALL Java_Extractor_sep_1sum_1circann
  * Signature: ([B[B[BIIIIIDDS[D[D[D[D[DDI[D[D[D[S)I
  */
 JNIEXPORT jint JNICALL Java_Extractor_sep_1sum_1ellipse
-  (JNIEnv *, jobject, jbyteArray, jbyteArray, jbyteArray, jint, jint, jint, jint, jint, jdouble, jdouble, jshort, jdoubleArray, jdoubleArray, jdoubleArray, jdoubleArray, jdoubleArray, jdouble, jint, jdoubleArray, jdoubleArray, jdoubleArray, jshortArray);
+  (JNIEnv *, jobject, jbyteArray, jbyteArray, jbyteArray, jint, jint, jint, jint, jint, jdouble, jdouble, jshort, jdoubleArray, jdoubleArray, jdoubleArray, jdoubleArray, jdoubleArray, jdoubleArray, jint, jdoubleArray, jdoubleArray, jdoubleArray, jshortArray);
 
 /*
  * Class:     Extractor

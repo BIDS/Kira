@@ -28,8 +28,8 @@ class Background(matrix: Array[Array[Double]], mask: Array[Array[Boolean]] = nul
   /**Macro definition from sepcore.h*/
   val MEMORY_ALLOC_ERROR: Int = 1
 
-  System.loadLibrary("BackgroundImpl")
-  //System.load("/Users/zhaozhang/projects/scratch/Kira/src/main/scala/libBackgroundImpl.jnilib")
+  //System.loadLibrary("BackgroundImpl")
+  System.load("/Users/zhaozhang/projects/scratch/Kira/src/main/scala/libBackgroundImpl.jnilib")
   var bkgmap = new Sepbackmap()
 
   val data: Array[Byte] = Utils.flatten(matrix)
@@ -140,7 +140,7 @@ object Test {
     val naper = 1000
     val x = Array.fill(naper)(Random.nextDouble * (800 - 200) + 200.0)
     val y = Array.fill(naper)(Random.nextDouble * (800 - 200) + 200.0)
-    var r = 3.0
+    var r = Array.fill[Double](naper) { 3.0 }
     val matrix = Array.fill[Double](naper, naper) { 1.0 }
     val mask = Array.fill[Boolean](naper, naper) { false }
     val aa = Array.fill[Double](naper) { 1.0 }
@@ -166,7 +166,7 @@ object Test {
     a = Array.fill(naper)(2.0)
     val b = Array.fill(naper)(1.0)
     val t = Array.fill(naper)(pi / 4)
-    r = 5.0
+    r = Array.fill[Double](naper) { 5.0 }
     val bkgann = Array(6.0, 8.0)
 
     val (sum2, sumerr2, flag2) = ex.sum_ellipse(matrix, x, y, a, b, t, r, bkgann = bkgann)
@@ -176,11 +176,11 @@ object Test {
 
   def extractTest() {
     val ex = new Extractor
-    var matrix: Array[Array[Double]] = Utils.load("../../../data/image1.fits")
+    var matrix: Array[Array[Double]] = Utils.load("/Users/zhaozhang/projects/scratch/java/test/data/image.fits")
     val bkg = new Background(matrix)
     matrix = bkg.subfrom(matrix)
 
-    /*println("==================sep_extract() with noise without conv test 1================")
+    println("==================sep_extract() with noise without conv test 1================")
     val noise = Array.fill[Double](matrix.length, matrix(0).length)(1.0)
     val objects: Array[Sepobj] = ex.extract(matrix, (1.5 * bkg.bkgmap.globalrms).toFloat, conv = null)
     println("Scala: extract: extracted " + objects.length + " objects")
@@ -193,7 +193,7 @@ object Test {
     println("Scala: extract: extracted " + objects2.length + " objects")
     for (i <- (0 until objects2.length)) {
       println("objects2: " + i + "\tx: " + objects2(i).x + "\ty: " + objects2(i).y + "\tflux: " + objects2(i).flux)
-    }*/
+    }
 
     /**
      * The following test fails, as the extract function returns 7, which is from the sortit function in extract.c.
@@ -213,12 +213,24 @@ object Test {
       println("objects4: " + i + "\tx: " + objects4(i).x + "\ty: " + objects4(i).y + "\tflux: " + objects4(i).flux)
     }
 
-    /*println("==================sep_extract() with noise with conv test 1================")
+    println("==================sep_extract() with noise with conv test 1================")
     val objects5 = ex.extract(matrix, (1.5 * bkg.bkgmap.globalrms).toFloat, noise = noise)
     println("Scala: extract: extracted " + objects5.length + " objects")
     for (i <- (0 until objects5.length)) {
       println("objects5: " + i + "\tx: " + objects5(i).x + "\ty: " + objects5(i).y + "\tflux: " + objects5(i).flux)
-    }*/
+    }
+
+    println("==================sep_extract() without noise, sum_circle with error================")
+    val objects6: Array[Sepobj] = ex.extract(matrix, (1.5 * bkg.bkgmap.globalrms).toFloat)
+    var x: Array[Double] = Array.ofDim[Double](objects6.length)
+    var y: Array[Double] = Array.ofDim[Double](objects6.length)
+    for (i <- (0 until objects6.length)) {
+      x(i) = objects6(i).x
+      y(i) = objects6(i).y
+    }
+    var err: Array[Array[Double]] = Array.fill(matrix.length, matrix(0).length) { bkg.bkgmap.globalrms }
+    val (flux, fluxerr, flag) = ex.sum_circle(matrix, x, y, 5.0, err = err)
+    println(fluxerr.mkString(", "))
   }
 
   def ellipseTest() {
@@ -316,8 +328,8 @@ object Test {
   def main(args: Array[String]) {
     //backTest()
     //sumCircleTest()
-    //sumEllipseTest()
-    extractTest()
+    sumEllipseTest()
+    //extractTest()
     //ellipseTest()
     //kron_radiusTest()
     //mask_ellipseTest()
