@@ -1,4 +1,5 @@
 import util.Random
+import java.io._
 
 class Background(matrix: Array[Array[Double]], mask: Array[Array[Boolean]] = null, maskthresh: Double = 0.0,
                  bw: Int = 64, bh: Int = 64, fw: Int = 3, fh: Int = 3, fthresh: Double = 0.0) {
@@ -176,7 +177,7 @@ object Test {
 
   def extractTest() {
     val ex = new Extractor
-    var matrix: Array[Array[Double]] = Utils.load("/Users/zhaozhang/projects/scratch/java/test/data/image.fits")
+    var matrix: Array[Array[Double]] = Utils.load("/root/Kira/scratch/spark-ec2/data/image1.fits")
     val bkg = new Background(matrix)
     matrix = bkg.subfrom(matrix)
 
@@ -235,7 +236,7 @@ object Test {
 
   def ellipseTest() {
     val ex = new Extractor
-    var matrix: Array[Array[Double]] = Utils.load("/Users/zhaozhang/projects/scratch/java/test/data/image.fits")
+    var matrix: Array[Array[Double]] = Utils.load("/root/Kira/scratch/spark-ec2/data/image1.fits")
     val bkg = new Background(matrix)
     matrix = bkg.subfrom(matrix)
     val noise = Array.fill[Double](matrix.length, matrix(0).length)(1.0)
@@ -280,7 +281,7 @@ object Test {
 
   def kron_radiusTest() {
     val ex = new Extractor
-    var matrix: Array[Array[Double]] = Utils.load("/Users/zhaozhang/projects/scratch/java/test/data/image.fits")
+    var matrix: Array[Array[Double]] = Utils.load("/root/Kira/scratch/spark-ec2/data/image1.fits")
     val bkg = new Background(matrix)
     matrix = bkg.subfrom(matrix)
     val noise = Array.fill[Double](matrix.length, matrix(0).length)(1.0)
@@ -325,13 +326,63 @@ object Test {
     val retmatrix2 = ex.mask_ellipse(mask, x, y, a = a, b = b, theta = theta, r2)
     println(retmatrix2.map(r => (r.map(x => if (x == true) 1 else 0).reduce(_ + _))).reduce(_ + _))
   }
+
+  def batch_Test() {
+    val src = "/mnt/data/input_0.5_0.5"
+    val flist = new File(src).listFiles.filter(_.getName.endsWith(".fit"))
+    val results = flist.map(f => extract(f.toString))
+    val flatresults = results.flatMap(p => p.map(r => (r._1, r._2, r._3, r._4, r._5, r._6, r._7, r._8, r._9)))
+  }
+
+  def extract(path: String): Array[(Int, Double, Double, Double, Double, Double, Double, Double, Short)] = {
+    var matrix = Utils.load(path)
+    var bkg = new Background(matrix)
+    matrix = bkg.subfrom(matrix)
+    val ex = new Extractor
+    val objects = ex.extract(matrix, (1.5 * bkg.bkgmap.globalrms).toFloat)
+    //return objects.length
+    var x: Array[Double] = Array.ofDim[Double](objects.length)
+    var y: Array[Double] = Array.ofDim[Double](objects.length)
+    var a: Array[Double] = Array.ofDim[Double](objects.length)
+    var b: Array[Double] = Array.ofDim[Double](objects.length)
+    var theta: Array[Double] = Array.ofDim[Double](objects.length)
+    var r: Array[Double] = Array.fill(objects.length) { 6.0 }
+    for (i <- (0 until objects.length)) {
+      x(i) = objects(i).x
+      y(i) = objects(i).y
+      a(i) = objects(i).a
+      b(i) = objects(i).b
+      theta(i) = objects(i).theta
+    }
+
+    var err: Array[Array[Double]] = Array.fill(matrix.length, matrix(0).length) { bkg.bkgmap.globalrms }
+
+    val (flux, fluxerr, flag) = ex.sum_circle(matrix, x, y, 5.0, err = err)
+
+    val (kr, flag2) = ex.kron_radius(matrix, x, y, a, b, theta, r)
+    val kr_ellipse = kr.map(x => 2.5 * x)
+
+    val (flux_auto, flux_auto_err, auto_flag) = ex.sum_ellipse(matrix, x, y, a, b, theta, kr_ellipse, err = err, subpix = 1)
+
+    val retArray = (0 until objects.length).map(i => (i, x(i), y(i), flux(i), fluxerr(i), kr(i), flux_auto(i), flux_auto_err(i), auto_flag(i))).toArray
+
+    val narray = path.split("/")
+    val fname = narray(narray.length - 1)
+    val writer = new PrintWriter(new File("catalog/" + fname))
+    retArray.map(r => writer.write(r.toString))
+    writer.close()
+
+    return retArray
+  }
+
   def main(args: Array[String]) {
-    //backTest()
-    //sumCircleTest()
+    /*backTest()
+    sumCircleTest()
     sumEllipseTest()
-    //extractTest()
-    //ellipseTest()
-    //kron_radiusTest()
-    //mask_ellipseTest()
+    extractTest()
+    ellipseTest()
+    kron_radiusTest()
+    mask_ellipseTest()*/
+    batch_Test()
   }
 }

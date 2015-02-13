@@ -36,6 +36,14 @@ JNIEXPORT jint JNICALL Java_Extractor_sep_1sum_1circle
     (*env)->SetDoubleArrayRegion(env, area, i, 1, &darea);
     (*env)->SetShortArrayRegion(env, flag, i, 1, &dflag);
   }
+
+  free(array);
+  free(xarray);
+  free(yarray);
+  if(e_array != NULL)
+    free(e_array);
+  if(m_array != NULL)
+    free(m_array);
   return status;
 }
 
@@ -70,6 +78,14 @@ JNIEXPORT jint JNICALL Java_Extractor_sep_1sum_1circann
     (*env)->SetDoubleArrayRegion(env, area, i, 1, &darea);
     (*env)->SetShortArrayRegion(env, flag, i, 1, &dflag);
   }
+  free(array);
+  free(xarray);
+  free(yarray);
+  if(e_array != NULL)
+    free(e_array);
+  if(m_array != NULL)
+    free(m_array);
+
   return status;
 }
 
@@ -109,6 +125,19 @@ JNIEXPORT jint JNICALL Java_Extractor_sep_1sum_1ellipse
     (*env)->SetDoubleArrayRegion(env, area, i, 1, &darea);
     (*env)->SetShortArrayRegion(env, flag, i, 1, &dflag);
   }
+
+  free(array);
+  free(xarray);
+  free(yarray);
+  free(a_array);
+  free(b_array);
+  free(theta_array);
+  free(r_array);
+  if(e_array != NULL)
+    free(e_array);
+  if(m_array != NULL)
+    free(m_array);
+
   return status;
 }
 
@@ -148,6 +177,17 @@ JNIEXPORT jint JNICALL Java_Extractor_sep_1sum_1ellipann
     (*env)->SetDoubleArrayRegion(env, area, i, 1, &darea);
     (*env)->SetShortArrayRegion(env, flag, i, 1, &dflag);
   }
+  free(array);
+  free(xarray);
+  free(yarray);
+  free(a_array);
+  free(barray);
+  free(thetaarray);
+  if(e_array != NULL)
+    free(e_array);
+  if(m_array != NULL)
+    free(m_array);
+
   return status;
 }
 
@@ -158,10 +198,11 @@ JNIEXPORT jint JNICALL Java_Extractor_sep_1extract
  
   
   jfloat *conv = NULL;
-  printf("C sep_extract: convw: %d, convh: %d\n", convw, convh);
+  jbyte *carray = NULL;
+  //printf("C sep_extract: convw: %d, convh: %d\n", convw, convh);
   if(convw !=0 && convh != 0)
   { 
-    jbyte *carray = (jbyte *)(*env)->GetByteArrayElements(env, cstream, NULL);  
+    carray = (jbyte *)(*env)->GetByteArrayElements(env, cstream, NULL);  
     conv = (jfloat *)malloc(sizeof(float)*convw*convh);
     double *dp = (double *)carray;
     for(int i=0; i<convw*convh; i++){
@@ -172,14 +213,14 @@ JNIEXPORT jint JNICALL Java_Extractor_sep_1extract
 
   jbyte *narray = NULL;
   if(nstream != NULL){
-    printf("C sep_extract: nstream is not null\n");
-    jbyte *narray = (jbyte *)(*env)->GetByteArrayElements(env, nstream, NULL);
+    //printf("C sep_extract: nstream is not null\n");
+    narray = (jbyte *)(*env)->GetByteArrayElements(env, nstream, NULL);
   }
 
   sepobj *objs;
 
   int status = sep_extract(marray, narray, dtype, ndtype, noise_flag, w, h, thresh, minarea, conv, convw, convh, deblend_nthresh, deblend_cont, clean_flag, clean_param, &objs, &nobj);
-  printf("C sep_extract: status: %d\n", status);
+  //printf("C sep_extract: status: %d\n", status);
 
   /*for(int i=0; i<nobj; i++)
     printf("Number: %d\t X_IMAGE: %f\t Y_IMAGE: %f\n", i, objs[i].x, objs[i].y);*/
@@ -193,6 +234,15 @@ JNIEXPORT jint JNICALL Java_Extractor_sep_1extract
     jobject sepobj = (*env)->CallObjectMethod(env, obj, consID, objs[i].thresh, objs[i].npix, objs[i].tnpix, objs[i].xmin, objs[i].xmax, objs[i].ymin, objs[i].ymax, objs[i].x, objs[i].y, objs[i].x2, objs[i].y2, objs[i].xy, objs[i].a, objs[i].b, objs[i].theta, objs[i].cxx, objs[i].cyy, objs[i].cxy, objs[i].cflux, objs[i].flux, objs[i].cpeak, objs[i].peak, objs[i].xcpeak, objs[i].ycpeak, objs[i].xpeak, objs[i].ypeak, objs[i].flag);
     (*env)->SetObjectArrayElement(env, objects, i, sepobj);
   }
+
+  free(marray);
+  if(conv != NULL)
+    free(conv);
+  if(carray != NULL)
+    free(carray);
+  if(marray != NULL)
+    free(narray);
+
   return nobj;
 }
 

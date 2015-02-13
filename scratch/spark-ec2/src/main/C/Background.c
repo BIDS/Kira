@@ -104,6 +104,11 @@ void sep_back_java_c(JNIEnv *env, jclass bkmapcls, jobject bkmap, sepbackmap *p,
   memcpy(dbp, dbackarray, sizeof(float)*(p->n));
   memcpy(sp, sigmaarray, sizeof(float)*(p->n));
   memcpy(dsp, dsigmaarray, sizeof(float)*(p->n));
+
+  free(backarray);
+  free(dbackarray);
+  free(sigmaarray);
+  free(dsigmaarray);
 }
 
 JNIEXPORT jint JNICALL Java_Background_sep_1makeback
@@ -117,7 +122,7 @@ JNIEXPORT jint JNICALL Java_Background_sep_1makeback
   jbooleanArray dim = NULL;
   jbooleanArray oneDim = NULL;
   if(maskdata == NULL){
-    mask = (void *)NULL;
+    mask = NULL;
   }  
   else{
     /*parse the mask matrix*/
@@ -130,6 +135,7 @@ JNIEXPORT jint JNICALL Java_Background_sep_1makeback
       oneDim = (jbooleanArray)(*env)->GetObjectArrayElement(env, maskdata, i);
       jboolean *element=(*env)->GetBooleanArrayElements(env, oneDim, 0);
       memcpy(mask+i*mlen2, element, sizeof(jboolean)*mlen2);
+      free(element);
     }
   }
 
@@ -148,8 +154,8 @@ JNIEXPORT jint JNICALL Java_Background_sep_1makeback
   int status = sep_makeback(array, mask, dtype, mdtype, w, h, bw, bh, mthresh, fw, fh, fthresh, &p);
 
   //printf("%d\n", status);
-  printf("C sep_makeback: %d\t%d\t%f\t%f\t%d\t%d\t%d\t%d\n", p->w, p->h, p->globalback, p->globalrms, p->bw, p->bh, p->nx, p->ny);
-  printf("C sep_makeback back: %f\t dback: %f\n", *(p->back), *(p->dback));
+  //printf("C sep_makeback: %d\t%d\t%f\t%f\t%d\t%d\t%d\t%d\n", p->w, p->h, p->globalback, p->globalrms, p->bw, p->bh, p->nx, p->ny);
+  //printf("C sep_makeback back: %f\t dback: %f\n", *(p->back), *(p->dback));
 
   /*Finding the sepbackmap field in the Background class*/
   jclass cls = (*env)->GetObjectClass(env, obj);
@@ -163,7 +169,7 @@ JNIEXPORT jint JNICALL Java_Background_sep_1makeback
 
   sep_back_c_java(env, cls, obj, bkmapcls, bkmap, p);
 
-  float *fp = p->back;
+  /*float *fp = p->back;
   for(int i=0; i<p->n; i++){
     printf("back: %f\t", *(fp++));
   }
@@ -185,7 +191,7 @@ JNIEXPORT jint JNICALL Java_Background_sep_1makeback
   for(int i=0; i<p->n; i++){
     printf("dsigma: %f\t", *(fp++));
   }
-  printf("\n");
+  printf("\n");*/
   free(array);
   free(p);
 
@@ -193,6 +199,12 @@ JNIEXPORT jint JNICALL Java_Background_sep_1makeback
     printf("C makeback: free mask\n");
     free(mask);
   }
+  /*if(dim != NULL){
+    free(dim);
+  }
+  if(oneDim != NULL){
+    free(oneDim);
+    }*/
 
   return status;
 }
@@ -215,17 +227,17 @@ JNIEXPORT jint JNICALL Java_Background_sep_1backarray
 
   sep_back_java_c(env, cls, bkmap, p, back, dback, sigma, dsigma);
 
-  printf("C sep_backarray: %d\t%d\t%f\t%f\t%d\t%d\n", p->w, p->h, p->globalback, p->globalrms, p->bw, p->bh);
+  /*printf("C sep_backarray: %d\t%d\t%f\t%f\t%d\t%d\n", p->w, p->h, p->globalback, p->globalrms, p->bw, p->bh);
   printf("C sep_backarray: nx: %d \t ny: %d \t n: %d\n", p->nx, p->ny, p->n);
   printf("C sep_backarray: back: %f \t dback: %f\n", *(p->back), *(p->dback));
-  printf("C sep_backarray: sigma: %f \t dsigma: %f\n", *(p->sigma), *(p->dsigma));
+  printf("C sep_backarray: sigma: %f \t dsigma: %f\n", *(p->sigma), *(p->dsigma));*/
 
   
   int status = sep_backarray(p, array, dtype);
-  printf("status: %d\n", status);
+  //printf("status: %d\n", status);
   (*env)->SetByteArrayRegion(env, data, 0, len, array);
 
-  printf("%d, \n", array[0]);
+  //printf("%d, \n", array[0]);
 
   /*for(int i=0; i<len/8; i++){
     double d;
@@ -233,7 +245,7 @@ JNIEXPORT jint JNICALL Java_Background_sep_1backarray
     printf("%f, ", d);
   }*/
 
-  free(array);
+  //free(array);
   free(p);
   return status;
 }
@@ -257,10 +269,10 @@ JNIEXPORT jint JNICALL Java_Background_sep_1subbackarray
 
   sep_back_java_c(env, cls, bkgmap, p, back, dback, sigma, dsigma);
 
-  printf("C sep_subbackarray: %d\t%d\t%f\t%f\t%d\t%d\n", p->w, p->h, p->globalback, p->globalrms, p->bw, p->bh);
-  printf("C sep_subbackarray: nx: %d \t ny: %d \t n: %d\n", p->nx, p->ny, p->n);
-  printf("C sep_subbackarray: back: %f \t dback: %f\n", *(p->back), *(p->dback));
-  printf("C sep_subbackarray: sigma: %f \t dsigma: %f\n", *(p->sigma), *(p->dsigma));
+  //printf("C sep_subbackarray: %d\t%d\t%f\t%f\t%d\t%d\n", p->w, p->h, p->globalback, p->globalrms, p->bw, p->bh);
+  //printf("C sep_subbackarray: nx: %d \t ny: %d \t n: %d\n", p->nx, p->ny, p->n);
+  //printf("C sep_subbackarray: back: %f \t dback: %f\n", *(p->back), *(p->dback));
+  //printf("C sep_subbackarray: sigma: %f \t dsigma: %f\n", *(p->sigma), *(p->dsigma));
 
   int status = sep_subbackarray(p, array, dtype);
   (*env)->SetByteArrayRegion(env, data, 0, len, array);
@@ -272,6 +284,8 @@ JNIEXPORT jint JNICALL Java_Background_sep_1subbackarray
   }
   printf("\n");*/
 
+  free(array);
+  free(p);
   return status;
 }
 
