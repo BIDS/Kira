@@ -57,11 +57,12 @@ source "$SPARK_HOME"/bin/utils.sh
 SUBMIT_USAGE_FUNCTION=usage
 gatherSparkSubmitOpts "$@"
 
-#  --master local-cluster[4,1,1024] \
+
 # submit the job to Spark
 "$SPARK_SUBMIT" \
   --class Kira \
   --jars "$KIRA_JARS" \
+  --master local-cluster[4,1,58315] \
   "${SUBMISSION_OPTS[@]}" \
   "$KIRA_JAR" \
   "${APPLICATION_OPTS[@]}"

@@ -28,8 +28,8 @@ class Background(matrix: Array[Array[Double]], mask: Array[Array[Boolean]] = nul
   /**Macro definition from sepcore.h*/
   val MEMORY_ALLOC_ERROR: Int = 1
 
-  //System.loadLibrary("BackgroundImpl")
-  System.load("/Users/zhaozhang/projects/scratch/Kira/src/main/scala/libBackgroundImpl.jnilib")
+  System.loadLibrary("BackgroundImpl")
+  //System.load("/Users/zhaozhang/projects/scratch/Kira/src/main/scala/libBackgroundImpl.jnilib")
   var bkgmap = new Sepbackmap()
 
   val data: Array[Byte] = Utils.flatten(matrix)
