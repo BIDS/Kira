@@ -119,24 +119,25 @@ JNIEXPORT jint JNICALL Java_Background_sep_1makeback
   jbyte *array = (jbyte *)(*env)->GetByteArrayElements(env, data, NULL);
 
   jboolean *mask;
-  jbooleanArray dim = NULL;
-  jbooleanArray oneDim = NULL;
   if(maskdata == NULL){
     mask = NULL;
   }  
   else{
     /*parse the mask matrix*/
     int mlen1 = (*env)->GetArrayLength(env, maskdata);
-    dim = (jbooleanArray)(*env)->GetObjectArrayElement(env, maskdata, 0);
+    jbooleanArray dim = (jbooleanArray)(*env)->GetObjectArrayElement(env, maskdata, 0);
     int mlen2 = (*env)->GetArrayLength(env, dim);
     printf("mlen2: %d\n", mlen2);
     mask = malloc(sizeof(jboolean)* mlen1 * mlen2);
     for(int i=0; i<mlen1; i++){
-      oneDim = (jbooleanArray)(*env)->GetObjectArrayElement(env, maskdata, i);
+      jbooleanArray oneDim = (jbooleanArray)(*env)->GetObjectArrayElement(env, maskdata, i);
       jboolean *element=(*env)->GetBooleanArrayElements(env, oneDim, 0);
       memcpy(mask+i*mlen2, element, sizeof(jboolean)*mlen2);
-      free(element);
+      //free(element);
+      (*env)->ReleaseBooleanArrayElements(env, oneDim, element, 0);
     }
+    jboolean *bp = (*env)->GetBooleanArrayElements(env, dim, 0);
+    (*env)->ReleaseBooleanArrayElements(env, dim, bp, 0);
   }
 
 

@@ -327,11 +327,12 @@ object Test {
     println(retmatrix2.map(r => (r.map(x => if (x == true) 1 else 0).reduce(_ + _))).reduce(_ + _))
   }
 
-  def batch_Test() {
-    val src = "/mnt/data/input_0.5_0.5"
-    val flist = new File(src).listFiles.filter(_.getName.endsWith(".fit"))
-    val results = flist.map(f => extract(f.toString))
-    val flatresults = results.flatMap(p => p.map(r => (r._1, r._2, r._3, r._4, r._5, r._6, r._7, r._8, r._9)))
+  def batch_Test(input:String, output:String) {
+    val src = input
+    val results = extract(src)
+    val writer = new PrintWriter(new File(output))
+    results.map(r => writer.write(r.toString+"\n"))
+    writer.close()
   }
 
   def extract(path: String): Array[(Int, Double, Double, Double, Double, Double, Double, Double, Short)] = {
@@ -366,23 +367,17 @@ object Test {
 
     val retArray = (0 until objects.length).map(i => (i, x(i), y(i), flux(i), fluxerr(i), kr(i), flux_auto(i), flux_auto_err(i), auto_flag(i))).toArray
 
-    val narray = path.split("/")
-    val fname = narray(narray.length - 1)
-    val writer = new PrintWriter(new File("catalog/" + fname))
-    retArray.map(r => writer.write(r.toString))
-    writer.close()
-
     return retArray
   }
 
   def main(args: Array[String]) {
-    /*backTest()
+    backTest()
     sumCircleTest()
     sumEllipseTest()
     extractTest()
     ellipseTest()
     kron_radiusTest()
-    mask_ellipseTest()*/
-    batch_Test()
+    mask_ellipseTest()
+    //batch_Test(args(0), args(1))
   }
 }
