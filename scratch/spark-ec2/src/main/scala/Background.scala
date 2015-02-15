@@ -371,13 +371,13 @@ object Test {
   }
 
   def main(args: Array[String]) {
-    backTest()
+    /*backTest()
     sumCircleTest()
     sumEllipseTest()
     extractTest()
     ellipseTest()
     kron_radiusTest()
-    mask_ellipseTest()
-    //batch_Test(args(0), args(1))
+    mask_ellipseTest()*/
+    batch_Test(args(0), args(1))
   }
 }
