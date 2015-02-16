@@ -23,7 +23,11 @@ mvn clean package
 
 5.1 edit spark-env.sh to launch mutliple JVMs each with one worker
 
+    export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/root/Kira/scratch/spark-ec2/libs
+
 5.2 edit spark-default.conf to change the memory for each worker
+
+    spark.executor.memory   6144m
 
 5.2 /root/spark/sbin/stop-all.sh
 
