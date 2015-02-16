@@ -21,7 +21,9 @@ mvn clean package
 
 ## Update spark-env.sh
 
-5.1 cp /root/Kira/scratch/spark-ec2/etc/spark-env.sh /spark/conf
+5.1 edit spark-env.sh to launch mutliple JVMs each with one worker
+
+5.2 edit spark-default.conf to change the memory for each worker
 
 5.2 /root/spark/sbin/stop-all.sh
 
