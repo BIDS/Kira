@@ -29,6 +29,8 @@ mvn clean package
 
     spark.executor.memory   6144m
 
+    spark.default.parallelism 1
+    
     spark.locality.wait 0
 
 5.2 /root/spark/sbin/stop-all.sh
