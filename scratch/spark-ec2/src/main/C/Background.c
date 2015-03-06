@@ -105,10 +105,14 @@ void sep_back_java_c(JNIEnv *env, jclass bkmapcls, jobject bkmap, sepbackmap *p,
   memcpy(sp, sigmaarray, sizeof(float)*(p->n));
   memcpy(dsp, dsigmaarray, sizeof(float)*(p->n));
 
-  free(backarray);
+  (*env)->ReleaseFloatArrayElements(env, back, backarray, 0);
+  (*env)->ReleaseFloatArrayElements(env, dback, dbackarray, 0);
+  (*env)->ReleaseFloatArrayElements(env, sigma, sigmaarray, 0);
+  (*env)->ReleaseFloatArrayElements(env, dsigma, dsigmaarray, 0);
+  /*free(backarray);
   free(dbackarray);
   free(sigmaarray);
-  free(dsigmaarray);
+  free(dsigmaarray);*/
 }
 
 JNIEXPORT jint JNICALL Java_Background_sep_1makeback
@@ -133,7 +137,7 @@ JNIEXPORT jint JNICALL Java_Background_sep_1makeback
       jbooleanArray oneDim = (jbooleanArray)(*env)->GetObjectArrayElement(env, maskdata, i);
       jboolean *element=(*env)->GetBooleanArrayElements(env, oneDim, 0);
       memcpy(mask+i*mlen2, element, sizeof(jboolean)*mlen2);
-      //free(element);
+      free(element);
       (*env)->ReleaseBooleanArrayElements(env, oneDim, element, 0);
     }
     jboolean *bp = (*env)->GetBooleanArrayElements(env, dim, 0);
@@ -193,11 +197,14 @@ JNIEXPORT jint JNICALL Java_Background_sep_1makeback
     printf("dsigma: %f\t", *(fp++));
   }
   printf("\n");*/
-  free(array);
-  free(p);
 
+  (*env)->ReleaseByteArrayElements(env, data, array, 0);
+  //free(array);
+  //printf("free p\n");
+  //free(p);
+
+  //free mask is not right, needs to fix
   if(mask != NULL){
-    printf("C makeback: free mask\n");
     free(mask);
   }
   /*if(dim != NULL){
@@ -246,7 +253,7 @@ JNIEXPORT jint JNICALL Java_Background_sep_1backarray
     printf("%f, ", d);
   }*/
 
-  //free(array);
+  free(array);
   free(p);
   return status;
 }
@@ -285,8 +292,15 @@ JNIEXPORT jint JNICALL Java_Background_sep_1subbackarray
   }
   printf("\n");*/
 
-  free(array);
-  free(p);
+  //free(array);
+  //printf("C subbackarray: free array\n");
+  (*env)->ReleaseByteArrayElements(env, data, array, 0);
+  //printf("C subbackarray: free p-> *\n");
+  free(p->back);
+  free(p->dback);
+  free(p->sigma);
+  free(p->dsigma);
+  //free(p);
   return status;
 }
 
