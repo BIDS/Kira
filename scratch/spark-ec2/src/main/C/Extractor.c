@@ -37,13 +37,20 @@ JNIEXPORT jint JNICALL Java_Extractor_sep_1sum_1circle
     (*env)->SetShortArrayRegion(env, flag, i, 1, &dflag);
   }
 
-  free(array);
+  (*env)->ReleaseByteArrayElements(env, data, array, 0);
+  (*env)->ReleaseDoubleArrayElements(env, x, xarray, 0);
+  (*env)->ReleaseDoubleArrayElements(env, y, yarray, 0);
+  if(e_array != NULL)
+    (*env)->ReleaseByteArrayElements(env, error, e_array, 0);
+  if(m_array != NULL)
+    (*env)->ReleaseByteArrayElements(env, mask, m_array, 0);
+  /*free(array);
   free(xarray);
   free(yarray);
   if(e_array != NULL)
     free(e_array);
   if(m_array != NULL)
-    free(m_array);
+  free(m_array);*/
   return status;
 }
 
@@ -78,13 +85,22 @@ JNIEXPORT jint JNICALL Java_Extractor_sep_1sum_1circann
     (*env)->SetDoubleArrayRegion(env, area, i, 1, &darea);
     (*env)->SetShortArrayRegion(env, flag, i, 1, &dflag);
   }
-  free(array);
+
+  (*env)->ReleaseByteArrayElements(env, data, array, 0);
+  (*env)->ReleaseDoubleArrayElements(env, x, xarray, 0);
+  (*env)->ReleaseDoubleArrayElements(env, y, yarray, 0);
+  if(e_array != NULL)
+    (*env)->ReleaseByteArrayElements(env, error, e_array, 0);
+  if(m_array != NULL)
+    (*env)->ReleaseByteArrayElements(env, mask, m_array, 0);
+
+  /*free(array);
   free(xarray);
   free(yarray);
   if(e_array != NULL)
     free(e_array);
   if(m_array != NULL)
-    free(m_array);
+  free(m_array);*/
 
   return status;
 }
@@ -126,7 +142,20 @@ JNIEXPORT jint JNICALL Java_Extractor_sep_1sum_1ellipse
     (*env)->SetShortArrayRegion(env, flag, i, 1, &dflag);
   }
 
-  free(array);
+
+  (*env)->ReleaseByteArrayElements(env, data, array, 0);
+  (*env)->ReleaseDoubleArrayElements(env, x, xarray, 0);
+  (*env)->ReleaseDoubleArrayElements(env, y, yarray, 0);
+  (*env)->ReleaseDoubleArrayElements(env, a, a_array, 0);
+  (*env)->ReleaseDoubleArrayElements(env, b, b_array, 0);
+  (*env)->ReleaseDoubleArrayElements(env, theta, theta_array, 0);
+  (*env)->ReleaseDoubleArrayElements(env, r, r_array, 0);
+  if(e_array != NULL)
+    (*env)->ReleaseByteArrayElements(env, error, e_array, 0);
+  if(m_array != NULL)
+    (*env)->ReleaseByteArrayElements(env, mask, m_array, 0);
+
+  /*free(array);
   free(xarray);
   free(yarray);
   free(a_array);
@@ -136,7 +165,7 @@ JNIEXPORT jint JNICALL Java_Extractor_sep_1sum_1ellipse
   if(e_array != NULL)
     free(e_array);
   if(m_array != NULL)
-    free(m_array);
+  free(m_array);*/
 
   return status;
 }
@@ -158,7 +187,7 @@ JNIEXPORT jint JNICALL Java_Extractor_sep_1sum_1ellipann
   jdouble *xarray = (jdouble *)(*env)->GetDoubleArrayElements(env, x, 0);
   jdouble *yarray = (jdouble *)(*env)->GetDoubleArrayElements(env, y, 0);
   jdouble *a_array = (jdouble *)(*env)->GetDoubleArrayElements(env, a, 0);
-  jdouble *barray = (jdouble *)(*env)->GetDoubleArrayElements(env, b, 0);
+  jdouble *b_array = (jdouble *)(*env)->GetDoubleArrayElements(env, b, 0);
   jdouble *thetaarray = (jdouble *)(*env)->GetDoubleArrayElements(env, theta, 0);
   int len = (*env)->GetArrayLength(env, x);
   int status = 0;
@@ -169,7 +198,7 @@ JNIEXPORT jint JNICALL Java_Extractor_sep_1sum_1ellipann
     double darea = 1.0;
     short dflag = 1;
 
-    status = sep_sum_ellipann(array, e_array, m_array, dtype, edtype, mdtype, w, h, maskthresh, gain, inflag, xarray[i], yarray[i], a_array[i], barray[i], thetaarray[i], rin, rout, subpix, &dsum, &dsumerr, &darea, &dflag);
+    status = sep_sum_ellipann(array, e_array, m_array, dtype, edtype, mdtype, w, h, maskthresh, gain, inflag, xarray[i], yarray[i], a_array[i], b_array[i], thetaarray[i], rin, rout, subpix, &dsum, &dsumerr, &darea, &dflag);
     //printf("C sep_sum_ellipse: dsum: %f\t dsumerr: %f\t darea: %f\t dflag: %d\n", dsum, dsumerr, darea, dflag);
 
     (*env)->SetDoubleArrayRegion(env, sum, i, 1, &dsum);
@@ -177,16 +206,29 @@ JNIEXPORT jint JNICALL Java_Extractor_sep_1sum_1ellipann
     (*env)->SetDoubleArrayRegion(env, area, i, 1, &darea);
     (*env)->SetShortArrayRegion(env, flag, i, 1, &dflag);
   }
-  free(array);
+
+  (*env)->ReleaseByteArrayElements(env, data, array, 0);
+  (*env)->ReleaseDoubleArrayElements(env, x, xarray, 0);
+  (*env)->ReleaseDoubleArrayElements(env, y, yarray, 0);
+  (*env)->ReleaseDoubleArrayElements(env, a, a_array, 0);
+  (*env)->ReleaseDoubleArrayElements(env, b, b_array, 0);
+  (*env)->ReleaseDoubleArrayElements(env, theta, thetaarray, 0);
+  if(e_array != NULL)
+    (*env)->ReleaseByteArrayElements(env, error, e_array, 0);
+  if(m_array != NULL)
+    (*env)->ReleaseByteArrayElements(env, mask, m_array, 0);
+
+
+  /*free(array);
   free(xarray);
   free(yarray);
   free(a_array);
-  free(barray);
+  free(b_array);
   free(thetaarray);
   if(e_array != NULL)
     free(e_array);
   if(m_array != NULL)
-    free(m_array);
+  free(m_array);*/
 
   return status;
 }
@@ -235,14 +277,16 @@ JNIEXPORT jint JNICALL Java_Extractor_sep_1extract
     (*env)->SetObjectArrayElement(env, objects, i, sepobj);
   }
 
-  free(marray);
+  (*env)->ReleaseByteArrayElements(env, data, marray, 0);
+  //free(marray);
   if(conv != NULL)
     free(conv);
   if(carray != NULL)
-    free(carray);
-  if(marray != NULL)
-    free(narray);
-
+    (*env)->ReleaseByteArrayElements(env, cstream, carray, 0);
+  //free(carray);
+  if(narray != NULL)
+    (*env)->ReleaseByteArrayElements(env, nstream, narray, 0);
+  //free(narray);
   return nobj;
 }
 
@@ -263,6 +307,13 @@ JNIEXPORT void JNICALL Java_Extractor_sep_1ellipse_1coeffs
   (*env)->SetDoubleArrayRegion(env, cxx, 0, len, cxx_array);
   (*env)->SetDoubleArrayRegion(env, cyy, 0, len, cyy_array);
   (*env)->SetDoubleArrayRegion(env, cxy, 0, len, cxy_array);
+
+  (*env)->ReleaseDoubleArrayElements(env, a, a_array, 0);
+  (*env)->ReleaseDoubleArrayElements(env, b, b_array, 0);
+  (*env)->ReleaseDoubleArrayElements(env, theta, theta_array, 0);
+  /*free(a_array);
+  free(b_array);
+  free(theta_array);*/
   free(cxx_array);
   free(cyy_array);
   free(cxy_array);
@@ -285,6 +336,10 @@ JNIEXPORT void JNICALL Java_Extractor_sep_1ellipse_1axes
   (*env)->SetDoubleArrayRegion(env, a, 0, len, a_array);
   (*env)->SetDoubleArrayRegion(env, b, 0, len, b_array);
   (*env)->SetDoubleArrayRegion(env, theta, 0, len, theta_array);
+
+  (*env)->ReleaseDoubleArrayElements(env, cxx, cxx_array, 0);
+  (*env)->ReleaseDoubleArrayElements(env, cyy, cyy_array, 0);
+  (*env)->ReleaseDoubleArrayElements(env, cxy, cxy_array, 0);
   free(a_array);
   free(b_array);
   free(theta_array);
@@ -316,6 +371,26 @@ JNIEXPORT void JNICALL Java_Extractor_sep_1kron_1radius
     
   (*env)->SetDoubleArrayRegion(env, kr, 0, len, kr_array);
   (*env)->SetShortArrayRegion(env, flag, 0, len, flag_array);
+
+  (*env)->ReleaseByteArrayElements(env, data, array, 0);
+  if(marray != NULL)
+      (*env)->ReleaseByteArrayElements(env, mstream, marray, 0);
+  (*env)->ReleaseDoubleArrayElements(env, x, x_array, 0);
+  (*env)->ReleaseDoubleArrayElements(env, y, y_array, 0);
+  (*env)->ReleaseDoubleArrayElements(env, cxx, cxx_array, 0);
+  (*env)->ReleaseDoubleArrayElements(env, cyy, cyy_array, 0);
+  (*env)->ReleaseDoubleArrayElements(env, cxy, cxy_array, 0);
+  (*env)->ReleaseDoubleArrayElements(env, r, r_array, 0);
+
+  /*free(array);
+  free(x_array);
+  free(y_array);
+  free(cxx_array);
+  free(cyy_array);
+  free(cxy_array);
+  free(r_array);*/
+  free(kr_array);
+  free(flag_array);
 }  
 
 JNIEXPORT void JNICALL Java_Extractor_sep_1set_1ellipse
