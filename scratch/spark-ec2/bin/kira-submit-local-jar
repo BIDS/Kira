@@ -24,7 +24,7 @@ KIRA_REPO="$(cd `dirname $0`/..; pwd)"
 KIRA_JARS=$("$KIRA_REPO"/bin/compute-kira-jars.sh)
 
 KIRA_JARS=`echo $KIRA_JARS|sed 's/,/,local:/g'`
-KIRA_JARS=local:/$KIRA_JARS
+KIRA_JARS=local:$KIRA_JARS
 
 # Find the MADD CLI jar
 num_versions=$(ls "$KIRA_REPO"/target/appassembler/repo/Kira/Kira/ | wc -l)
@@ -61,11 +61,11 @@ SUBMIT_USAGE_FUNCTION=usage
 gatherSparkSubmitOpts "$@"
 
 # --master local-cluster[8,1,8192] \
-
+echo $KIRA_JARS
 # submit the job to Spark
 "$SPARK_SUBMIT" \
   --class Kira \
   --jars "$KIRA_JARS" \
   "${SUBMISSION_OPTS[@]}" \
-  "local:/$KIRA_JAR" \
+  "local:$KIRA_JAR" \
   "${APPLICATION_OPTS[@]}"
