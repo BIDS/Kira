@@ -5,15 +5,15 @@ cd ~
 wget http://download.gluster.org/pub/gluster/glusterfs/LATEST/glusterfs-3.6.2.tar.gz
 
 #untar glusterfs
-tar -xf glusterfs-3.6.2
+tar -zxf glusterfs-3.6.2.tar.gz
 
 #install required packages on master
-yum install automake autoconf libtool flex bison openssl-devel libxml2-devel python-devel libaio-devel libibverbs-devel librdmacm-devel readline-devel lvm2-devel glib2-devel
+yum -y install automake autoconf libtool flex bison openssl-devel libxml2-devel python-devel libaio-devel libibverbs-devel librdmacm-devel readline-devel lvm2-devel glib2-devel
 
 #install required packages on all nodes
 for h in `cat ~/spark/conf/slaves`
 do
-  ssh $h (yum install automake autoconf libtool flex bison openssl-devel libxml2-devel python-devel libaio-devel libibverbs-devel librdmacm-devel readline-devel lvm2-devel glib2-devel)
+  ssh $h "yum -y install automake autoconf libtool flex bison openssl-devel libxml2-devel python-devel libaio-devel libibverbs-devel librdmacm-devel readline-devel lvm2-devel glib2-devel"
 done
 
 #compile glusterfs on master
@@ -29,5 +29,5 @@ cd ..
 #install glustefs on all nodes
 for h in `cat ~/spark/conf/slaves`
 do
-  ssh $h (cd glusterfs-3.6.2;make install)
+  ssh $h "cd glusterfs-3.6.2;make install"
 done
