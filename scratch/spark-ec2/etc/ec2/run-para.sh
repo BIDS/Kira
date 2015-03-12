@@ -29,6 +29,9 @@ do
   echo $h >> $workdir/nodes
 done
 #cp nodes $workdir/nodes
+
+date=`date +%s.%2N`
+echo "serial part finishes at $date" >> log
  
 paste $workdir/nodes $workdir/part.list | while read node file
 do
