@@ -29,6 +29,8 @@ mvn clean package
 
     spark.executor.memory   6144m
 
+    spark.executor.extraClassPath	/root/ephemeral-hdfs/conf:/root/Kira/scratch/spark-ec2/target/appassembler/repo/org/esa/fits/0.94/fits-0.94.jar
+
     spark.default.parallelism 1
     
     spark.locality.wait 0
