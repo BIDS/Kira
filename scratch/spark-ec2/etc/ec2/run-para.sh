@@ -7,6 +7,9 @@ mkdir -p $workdir
 #ccm_file=`sort -u $PBS_NODEFILE`
 #num_nodes=`sort -u $PBS_NODEFILE|wc -l`
 
+date=`date +%s.%2N`
+echo "start time $date" >> log
+
 ccm_file=`cat ~/spark/conf/slaves`
 num_nodes=`sort -u ~/spark/conf/slaves | wc -l`
 #num_nodes=4
@@ -27,8 +30,6 @@ do
 done
 #cp nodes $workdir/nodes
  
-date=`date +%s.%2N`
-echo "start time $date" >> log
 paste $workdir/nodes $workdir/part.list | while read node file
 do
   #echo "ssh $node $SCRATCH/sep/data/run-local.sh $file $indir $outdir"
