@@ -37,7 +37,7 @@ do
 done
 echo $cmd
 
-`$cmd`
+$cmd
 
 #start glusterfs volume
 gluster volume start testvol
