@@ -4,6 +4,10 @@ indir=$1
 outdir=$2
 workdir="tmp"
 mkdir -p $workdir
+
+date=`date +%s.%2N`
+echo "start time $date" >> log
+
 ccm_file=`sort -u $PBS_NODEFILE`
 num_nodes=`sort -u $PBS_NODEFILE|wc -l`
 #num_nodes=4
@@ -24,8 +28,6 @@ do
 done
 #cp nodes $workdir/nodes
  
-date=`date +%s.%2N`
-echo "start time $date" >> log
 paste $workdir/nodes $workdir/part.list | while read node file
 do
   #echo "ssh $node $SCRATCH/sep/data/run-local.sh $file $indir $outdir"
