@@ -48,5 +48,5 @@ mount -t glusterfs $target:/testvol /mnt/gluster
 
 for h in `cat ~/spark/conf/slaves`
 do
-  ssh $h "mkdir /mnt/gluster; target=`head -n 1 ~/spark/conf/slaves`; mount -t glusterfs $target:/testvol /mnt/gluster"
+  ssh $h "mkdir /mnt/gluster; target=`grep SPARK_MASTER_IP ~/spark/conf/spark-env.sh | cut -d '=' -f 2`; mount -t glusterfs $target:/testvol /mnt/gluster"
 done
