@@ -14,7 +14,7 @@ done
 #mount partition as a glusterfs brick on local node
 mkdir -p /srv/sdb1/brick
 mount /dev/xvdf /srv/sdb1
-#mkdir -p /srv/sdb1/brick
+mkdir -p /srv/sdb1/brick
 echo "/dev/xvdf /srv/sdb1 xfs defaults 0 0" | sudo tee -a /etc/fstab
 
 #mount partition as a glusterfs brick on all nodes
