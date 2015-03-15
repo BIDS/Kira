@@ -1,5 +1,5 @@
 #!/bin/bash
-
+export LD_LIBRARY_PATH=/mnt/gluster/sep/src
 cd /mnt/gluster/sep/data
 inlist=$1
 indir=$2
@@ -15,7 +15,7 @@ for f in `cat $inlist`
 do
   base=`basename $f`
   #strace -T -o /dev/shm/${base}.strace /scratch1/scratchdirs/zhaozhan/sextractor-2.19.5/bin/sex $indir/$f -CATALOG_NAME $outdir/${base}.cat &
-  /mnt/gluster/sextractor-2.19.5/bin/sex $indir/$f -CATALOG_NAME $outdir/${base}.cat -CHECKIMAGE_TYPE NONE &
+  /mnt/gluster/sep/ctest/test_image $indir/$f $outdir/${base}.cat &
   pids="$pids $!"
   i=$((i+1))
   if [ "${i}" -eq "${proc}" ];
