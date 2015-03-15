@@ -1,32 +1,52 @@
 #!/bin/bash
-export LD_LIBRARY_PATH=/mnt/gluster/sep/src
-cd /mnt/gluster/sep/data
-inlist=$1
-indir=$2
-outdir=$3
-#inlist=tmp/x0000
-#outdir=$SCRATCH/output/catalog_8_8
 
-proc=8
+indir=$1
+outdir=$2
+workdir="tmp"
+mkdir -p $workdir
+#ccm_file=`sort -u $PBS_NODEFILE`
+#num_nodes=`sort -u $PBS_NODEFILE|wc -l`
 
-i=0
-
-for f in `cat $inlist`
-do
-  base=`basename $f`
-  #strace -T -o /dev/shm/${base}.strace /scratch1/scratchdirs/zhaozhan/sextractor-2.19.5/bin/sex $indir/$f -CATALOG_NAME $outdir/${base}.cat &
-  /mnt/gluster/sep/ctest/test_image $indir/$f $outdir/${base}.cat &
-  pids="$pids $!"
-  i=$((i+1))
-  if [ "${i}" -eq "${proc}" ];
-  then
-      wait $pids
-      pids=""
-      i=0
-  fi
-done
-wait
 date=`date +%s.%2N`
-echo "finish time $date" >> log
-#sleep 1500
+echo "start time $date" >> log
 
+ccm_file=`cat ~/spark/conf/slaves`
+num_nodes=`sort -u ~/spark/conf/slaves | wc -l`
+#num_nodes=4
+ls -l $indir | tail -n +2 | awk '{print $9}' > $workdir/file.list
+num_files=`wc -l $workdir/file.list| awk '{print $1}'`
+#echo $num_files
+num_lines=$(($num_files/$num_nodes+1))
+
+cd $workdir
+split file.list -l $num_lines -d -a 4
+cd ..
+
+ls $workdir/x* > $workdir/part.list
+rm $workdir/nodes
+for h in $ccm_file 
+do
+  echo $h >> $workdir/nodes
+done
+#cp nodes $workdir/nodes
+
+date=`date +%s.%2N`
+echo "serial part finishes at $date" >> log
+ 
+paste $workdir/nodes $workdir/part.list | while read node file
+do
+  #echo "ssh $node $SCRATCH/sep/data/run-local.sh $file $indir $outdir"
+  (ssh -n $node /mnt/gluster/sep/data/run-local.sh /mnt/gluster/sep/data/$file $indir $outdir &)
+done
+#wait
+
+#sleep 1800
+#rm -rf $outdir/*
+#date=`date +%s.%2N`
+#echo "start time $date" >> log
+#paste $workdir/nodes $workdir/part.list | while read node file
+#do
+#  #echo "ssh $node $SCRATCH/sep/data/run-local.sh $file $indir $outdir"
+#  (ssh -n $node $SCRATCH/sep/data/run-local.sh $SCRATCH/sep/data/$file $indir $outdir &)
+#done
+#sleep 1800
