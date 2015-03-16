@@ -4,9 +4,9 @@ proc=$1
 
 i=0
 pids=""
-for f in `ls /mnt/input_18_18`
+for f in `ls /mnt/data/input_8_8`
 do
-  sex /mnt/input_18_18/$f -CATALOG_NAME catalog_18_18/$f.cat -CHECKIMAGE_TYPE NONE &
+  ~/sep/ctest/test_image /mnt/data/input_8_8/$f /mnt/output/catalog_8_8/$f.cat &
   pids="$pids $!"
   i=$((i+1))
   if [ "${i}" -eq "${proc}" ];
