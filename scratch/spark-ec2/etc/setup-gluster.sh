@@ -11,6 +11,7 @@ do
   ssh $h glusterd
 done
 
+sleep 5
 #mount partition as a glusterfs brick on local node
 mkdir -p /srv/sdb1/brick
 mount /dev/xvdf /srv/sdb1
@@ -23,6 +24,7 @@ do
   ssh $h "mkdir -p /srv/sdb1;mount /dev/xvdf /srv/sdb1;mkdir -p /srv/sdb1/brick;echo '/dev/xvdf /srv/sdb1 xfs defaults 0 0' | tee -a /etc/fstab"
 done
 
+sleep 5
 #probe all nodes
 for h in `cat ~/spark/conf/slaves`
 do
@@ -30,7 +32,8 @@ do
 done
 
 #configure glusterfs volume
-cmd="gluster volume create testvol replica 2"
+#cmd="gluster volume create testvol replica 2 "
+cmd="gluster volume create testvol "
 for h in `cat ~/spark/conf/slaves`
 do
   cmd="$cmd $h:/srv/sdb1/brick"
@@ -39,6 +42,7 @@ echo $cmd
 
 $cmd
 
+sleep 5
 #start glusterfs volume
 gluster volume start testvol
 
