@@ -14,14 +14,14 @@ done
 sleep 5
 #mount partition as a glusterfs brick on local node
 mkdir -p /srv/sdb1/brick
-mount /dev/xvdf /srv/sdb1
+mount /dev/xvdb /srv/sdb1
 mkdir -p /srv/sdb1/brick
-echo "/dev/xvdf /srv/sdb1 xfs defaults 0 0" | sudo tee -a /etc/fstab
+echo "/dev/xvdb /srv/sdb1 xfs defaults 0 0" | sudo tee -a /etc/fstab
 
 #mount partition as a glusterfs brick on all nodes
 for h in `cat ~/spark/conf/slaves`
 do
-  ssh $h "mkdir -p /srv/sdb1;mount /dev/xvdf /srv/sdb1;mkdir -p /srv/sdb1/brick;echo '/dev/xvdf /srv/sdb1 xfs defaults 0 0' | tee -a /etc/fstab"
+  ssh $h "mkdir -p /srv/sdb1;mount /dev/xvdb /srv/sdb1;mkdir -p /srv/sdb1/brick;echo '/dev/xvdb /srv/sdb1 xfs defaults 0 0' | tee -a /etc/fstab"
 done
 
 sleep 5
