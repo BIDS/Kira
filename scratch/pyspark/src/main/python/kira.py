@@ -42,7 +42,6 @@ def extract(data):
 if __name__ == "__main__":
 	sc = SparkContext(appName="SourceExtractor")
 	rdd = sc.fitsData("/Users/zhaozhang/projects/SDSS/data")
-	#rdd = sc.fitsData("/Users/zhaozhang/projects/Montage/m101/rawdir")
 	#rdd = sc.fitsData("/Users/zhaozhang/projects/Kira/scratch/spark-ec2/data/")
 	catalog = rdd.map(lambda (key, fits): (key, extract(np.copy(fits))))
 	catalog.saveAsTextFile("temp-output")
