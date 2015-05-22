@@ -22,17 +22,6 @@ from operator import add
 
 from pyspark import SparkContext
 
-
-if __name__ == "__main__":
-	sc = SparkContext(appName="SourceExtractor")
-	rdd = sc.fitsData("/Users/zhaozhang/projects/SDSS/data")
-	#rdd = sc.fitsData("/Users/zhaozhang/projects/Montage/m101/rawdir")
-	#rdd = sc.fitsData("/Users/zhaozhang/projects/Kira/scratch/spark-ec2/data/")
-	catalog = rdd.map(lambda (key, fits): (key, extract(np.copy(fits))))
-	catalog.saveAsTextFile("temp-output")
-
-	sc.stop()
-
 def extract(data):
 	bkg = sep.Background(data, bw=64, bh=64, fw=3, fh=3)
 	bkg.subfrom(data)
@@ -49,3 +38,13 @@ def extract(data):
 	for i in range(len(objs['x'])):
 		retstr = retstr+(str(objs['x'][i])+"\t"+str(objs['y'][i])+"\t"+str(flux[i])+"\t"+str(fluxerr[i])+"\t"+str(kr[i])+"\t"+str(eflux[i])+"\t"+str(efluxerr[i])+"\t"+str(flag[i])+"\n")
 	return retstr
+
+if __name__ == "__main__":
+	sc = SparkContext(appName="SourceExtractor")
+	rdd = sc.fitsData("/Users/zhaozhang/projects/SDSS/data")
+	#rdd = sc.fitsData("/Users/zhaozhang/projects/Montage/m101/rawdir")
+	#rdd = sc.fitsData("/Users/zhaozhang/projects/Kira/scratch/spark-ec2/data/")
+	catalog = rdd.map(lambda (key, fits): (key, extract(np.copy(fits))))
+	catalog.saveAsTextFile("temp-output")
+
+	sc.stop()
