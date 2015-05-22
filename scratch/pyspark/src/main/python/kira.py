@@ -25,9 +25,27 @@ from pyspark import SparkContext
 
 if __name__ == "__main__":
 	sc = SparkContext(appName="SourceExtractor")
-	rdd = sc.fitsData("/Users/zhaozhang/projects/Montage/m101/rawdir")
-	data = rdd.map(lambda x:np.copy(x).byteswap(True).newbyteorder())
-	bkg = data.map(lambda x:sep.Background(x, bw=64, bh=64, fw=3, fh=3))
-	bkgarr = bkg.map(lambda x:x.back(dtype=np.float32))
-	bkgarr.saveAsTextFile("temp-output/")
+	rdd = sc.fitsData("/Users/zhaozhang/projects/SDSS/data")
+	#rdd = sc.fitsData("/Users/zhaozhang/projects/Montage/m101/rawdir")
+	#rdd = sc.fitsData("/Users/zhaozhang/projects/Kira/scratch/spark-ec2/data/")
+	catalog = rdd.map(lambda (key, fits): (key, extract(np.copy(fits))))
+	catalog.saveAsTextFile("temp-output")
+
 	sc.stop()
+
+def extract(data):
+	bkg = sep.Background(data, bw=64, bh=64, fw=3, fh=3)
+	bkg.subfrom(data)
+	objs = sep.extract(data, 1.5*bkg.globalrms)
+	flux, fluxerr, flag = sep.sum_circle(data, objs['x'], objs['y'], 5.,
+                                         err=bkg.globalrms)
+	kr, flag = sep.kron_radius(data, objs['x'], objs['y'], objs['a'],
+                               			objs['b'], objs['theta'], 6.0)
+	eflux, efluxerr, eflag = sep.sum_ellipse(data, objs['x'], objs['y'],
+                                          objs['a'], objs['b'],
+                                          objs['theta'], r=2.5 * kr,
+                                          err=bkg.globalrms, subpix=1)
+	retstr = ""
+	for i in range(len(objs['x'])):
+		retstr = retstr+(str(objs['x'][i])+"\t"+str(objs['y'][i])+"\t"+str(flux[i])+"\t"+str(fluxerr[i])+"\t"+str(kr[i])+"\t"+str(eflux[i])+"\t"+str(efluxerr[i])+"\t"+str(flag[i])+"\n")
+	return retstr
