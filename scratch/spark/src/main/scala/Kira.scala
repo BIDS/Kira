@@ -10,7 +10,8 @@ object Kira {
     val conf = new SparkConf().setAppName("Kira")
     val sc = new SparkContext(conf)
 
-    val src = "/Users/zhaozhang/projects/scratch/Kira/data/"
+    //val src = "/Users/zhaozhang/projects/scratch/Kira/data/"
+    val src = "/Users/zhaozhang/projects/SDSS/data/"
     val flist = sc.binaryFiles(src)
 
     val results = flist.map(c => extract_str(c._2.toArray))
@@ -50,8 +51,11 @@ object Kira {
 
   def extract_str(content: Array[Byte]): Array[(Double, Double, Double, Double, Short)] = {
     var matrix = Utils.load_byte(content)
+    println("sum: " + matrix.map(x => x.sum).reduce(_ + _))
     var bkg = new Background(matrix)
     matrix = bkg.subfrom(matrix)
+
+    println("sum5: " + matrix.map(x => x.sum).reduce(_ + _))
     val ex = new Extractor
     val objects = ex.extract(matrix, (1.5 * bkg.bkgmap.globalrms).toFloat)
     //return objects.length

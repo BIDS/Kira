@@ -29,7 +29,8 @@ class Background(matrix: Array[Array[Double]], mask: Array[Array[Boolean]] = nul
   val MEMORY_ALLOC_ERROR: Int = 1
 
   //System.loadLibrary("BackgroundImpl")
-  System.load("/Users/zhaozhang/projects/scratch/Kira/src/main/scala/libBackgroundImpl.jnilib")
+  System.load("/Users/zhaozhang/projects/Kira/scratch/spark/src/main/c/libBackgroundImpl.jnilib")
+  //System.load("/Users/zhaozhang/projects/scratch/Kira/src/main/scala/libBackgroundImpl.jnilib")
   var bkgmap = new Sepbackmap()
 
   val data: Array[Byte] = Utils.flatten(matrix)

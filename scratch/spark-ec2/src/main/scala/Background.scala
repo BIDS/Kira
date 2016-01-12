@@ -327,11 +327,11 @@ object Test {
     println(retmatrix2.map(r => (r.map(x => if (x == true) 1 else 0).reduce(_ + _))).reduce(_ + _))
   }
 
-  def batch_Test(input:String, output:String) {
+  def batch_Test(input: String, output: String) {
     val src = input
     val results = extract(src)
     val writer = new PrintWriter(new File(output))
-    results.map(r => writer.write(r.toString+"\n"))
+    results.map(r => writer.write(r.toString + "\n"))
     writer.close()
   }
 

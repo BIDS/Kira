@@ -15,10 +15,11 @@
 # limitations under the License.
 #
 
+from astropy import fits
 import numpy as np
 import sep
 import sys
-from operator import add
+import StringIO
 
 from pyspark import SparkContext
 
@@ -37,13 +38,16 @@ def extract(data):
 	retstr = ""
 	for i in range(len(objs['x'])):
 		retstr = retstr+(str(objs['x'][i])+"\t"+str(objs['y'][i])+"\t"+str(flux[i])+"\t"+str(fluxerr[i])+"\t"+str(kr[i])+"\t"+str(eflux[i])+"\t"+str(efluxerr[i])+"\t"+str(flag[i])+"\n")
-	return retstr
+	return retstr  
 
 if __name__ == "__main__":
 	sc = SparkContext(appName="SourceExtractor")
-	rdd = sc.fitsData("/Users/zhaozhang/projects/SDSS/data")
+	frdd = sc.binaryFiles("/Users/zhaozhang/projects/SDSS/data")
 	#rdd = sc.fitsData("/Users/zhaozhang/projects/Kira/scratch/spark-ec2/data/")
-	catalog = rdd.map(lambda (key, fits): (key, extract(np.copy(fits))))
+  srdd = frdd.map(lambda x: StringIO.StringIO(x[1]))
+  hrdd = srdd.map(lmabda x: fits.getdata(x))
+
+	catalog = hrdd.map(lambda x: (key, extract(np.copy(x))))
 	catalog.saveAsTextFile("temp-output")
 
 	sc.stop()
