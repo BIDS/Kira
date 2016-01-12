@@ -42,11 +42,13 @@ def extract(data):
 
 if __name__ == "__main__":
   sc = SparkContext(appName="SourceExtractor")
-  frdd = sc.binaryFiles("/Users/zhaozhang/projects/SDSS/data")
+  inPath = sys.argv[1]
+  outPath = sys.argv[2]
+  frdd = sc.binaryFiles(inPath)
   srdd = frdd.map(lambda x: StringIO.StringIO(x[1]))
   hrdd = srdd.map(lambda x: fits.getdata(x))
 
   catalog = hrdd.map(lambda x: extract(np.copy(x)))
-  catalog.saveAsTextFile("temp-output")
+  catalog.saveAsTextFile(outPath)
 
   sc.stop()
