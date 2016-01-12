@@ -15,39 +15,38 @@
 # limitations under the License.
 #
 
-from astropy import fits
 import numpy as np
 import sep
 import sys
 import StringIO
 
+from astropy.io import fits
 from pyspark import SparkContext
 
 def extract(data):
-	bkg = sep.Background(data, bw=64, bh=64, fw=3, fh=3)
-	bkg.subfrom(data)
-	objs = sep.extract(data, 1.5*bkg.globalrms)
-	flux, fluxerr, flag = sep.sum_circle(data, objs['x'], objs['y'], 5.,
+  bkg = sep.Background(data, bw=64, bh=64, fw=3, fh=3)
+  bkg.subfrom(data)
+  objs = sep.extract(data, 1.5*bkg.globalrms)
+  flux, fluxerr, flag = sep.sum_circle(data, objs['x'], objs['y'], 5.,
                                          err=bkg.globalrms)
-	kr, flag = sep.kron_radius(data, objs['x'], objs['y'], objs['a'],
+  kr, flag = sep.kron_radius(data, objs['x'], objs['y'], objs['a'],
                                			objs['b'], objs['theta'], 6.0)
-	eflux, efluxerr, eflag = sep.sum_ellipse(data, objs['x'], objs['y'],
+  eflux, efluxerr, eflag = sep.sum_ellipse(data, objs['x'], objs['y'],
                                           objs['a'], objs['b'],
                                           objs['theta'], r=2.5 * kr,
                                           err=bkg.globalrms, subpix=1)
-	retstr = ""
-	for i in range(len(objs['x'])):
-		retstr = retstr+(str(objs['x'][i])+"\t"+str(objs['y'][i])+"\t"+str(flux[i])+"\t"+str(fluxerr[i])+"\t"+str(kr[i])+"\t"+str(eflux[i])+"\t"+str(efluxerr[i])+"\t"+str(flag[i])+"\n")
-	return retstr  
+  retstr = ""
+  for i in range(len(objs['x'])):
+    retstr = retstr+(str(objs['x'][i])+"\t"+str(objs['y'][i])+"\t"+str(flux[i])+"\t"+str(fluxerr[i])+"\t"+str(kr[i])+"\t"+str(eflux[i])+"\t"+str(efluxerr[i])+"\t"+str(flag[i])+"\n")
+  return retstr  
 
 if __name__ == "__main__":
-	sc = SparkContext(appName="SourceExtractor")
-	frdd = sc.binaryFiles("/Users/zhaozhang/projects/SDSS/data")
-	#rdd = sc.fitsData("/Users/zhaozhang/projects/Kira/scratch/spark-ec2/data/")
+  sc = SparkContext(appName="SourceExtractor")
+  frdd = sc.binaryFiles("/Users/zhaozhang/projects/SDSS/data")
   srdd = frdd.map(lambda x: StringIO.StringIO(x[1]))
-  hrdd = srdd.map(lmabda x: fits.getdata(x))
+  hrdd = srdd.map(lambda x: fits.getdata(x))
 
-	catalog = hrdd.map(lambda x: (key, extract(np.copy(x))))
-	catalog.saveAsTextFile("temp-output")
+  catalog = hrdd.map(lambda x: extract(np.copy(x)))
+  catalog.saveAsTextFile("temp-output")
 
-	sc.stop()
+  sc.stop()
