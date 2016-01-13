@@ -27,6 +27,11 @@ for h in `cat ~/spark/conf/slaves`; do   ssh $h "yum -y install python-pip pytho
 
 ```
 for h in `cat ~/spark/conf/slaves`; do   ssh $h "pip install sep astropy"; done
+for h in `cat ~/spark/conf/slaves`; do   ssh $h "pip install --upgrade numpy"; done
+```
+
+```
+~/ephemeral-hdfs/bin/hadoop distcp s3n://$AWS_ACCESS_KEY_ID:$AWS_SECRET_ACCESS_KEY@sdss-dataset/input_18_18 /user/root/
 ```
 
 ```
