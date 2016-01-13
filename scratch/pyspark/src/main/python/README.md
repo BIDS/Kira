@@ -22,11 +22,17 @@ pip install astropy
 
 # Running on a cluster
 ```
+Download sep, modify sep.pyx, do not assert sum_ellipse, compile it.
+for h in `cat ~/spark/conf/slaves`; do   ssh $h "yum -y install Cython"; done
+for h in `cat ~/spark/conf/slaves`; do   ssh $h "cd /mnt/sep; ./setup.py install"; done
+```
+
+```
 for h in `cat ~/spark/conf/slaves`; do   ssh $h "yum -y install python-pip python-wheel"; done
 ```
 
 ```
-for h in `cat ~/spark/conf/slaves`; do   ssh $h "pip install sep astropy"; done
+for h in `cat ~/spark/conf/slaves`; do   ssh $h "pip install astropy"; done
 for h in `cat ~/spark/conf/slaves`; do   ssh $h "pip install --upgrade numpy"; done
 ```
 
