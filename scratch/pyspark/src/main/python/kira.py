@@ -48,7 +48,7 @@ if __name__ == "__main__":
   srdd = frdd.map(lambda x: StringIO.StringIO(x[1]))
   hrdd = srdd.map(lambda x: fits.getdata(x))
 
-  catalog = hrdd.map(lambda x: extract(np.copy(x)))
+  catalog = hrdd.map(lambda x: extract(x.astype(float)))
   catalog.saveAsTextFile(outPath)
 
   sc.stop()
