@@ -43,3 +43,7 @@ for h in `cat ~/spark/conf/slaves`; do   ssh $h "pip install --upgrade numpy"; d
 ```
 ~/projects/spark/spark-1.4.0-fits/bin/spark-submit kira.py input output
 ```
+
+```
+for h in `cat ~/spark/conf/slaves`; do   ssh $h "free && sync && echo 3 > /proc/sys/vm/drop_caches && free"; done
+```
