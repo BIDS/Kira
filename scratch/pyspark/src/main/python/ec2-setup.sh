@@ -10,11 +10,6 @@ git checkout v0.5.3-no-assert
 ./setup.py install
 cd ..
 
-git clone https://github.com/BIDS/Kira.git
-cd Kira
-git checkout pyKira
-cd ..
-
 ~/spark-ec2/copy-dir /mnt/sep
 ~/spark-ec2/copy-dir /mnt/Kira
 
