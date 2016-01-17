@@ -2,7 +2,9 @@
 
 cd /mnt
 
-yum -y install Cython python-pip python-wheel astropy
+yum -y install Cython python-pip python-wheel 
+
+pip install astropy
 
 git clone https://github.com/zhaozhang/sep.git
 cd sep
