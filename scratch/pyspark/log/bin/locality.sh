@@ -2,9 +2,9 @@
 
 log=$1
 
-grep "Starting task" log-1 | awk '{print $15}' | awk -F, '{printf "%.1f %s\n", $1, $2}' | sort -k 1 > taskid.txt
+grep "Starting task" log-1 | awk '{print $15}' | awk -F, '{printf "%.1f %s\n", $1, $2}' | sort -nk 1 > taskid.txt
 
-grep "Finished task" $log | awk '{printf "%.1f %d\n", $7, $14}' | sort -k 1 > tasktime.txt
+grep "Finished task" $log | awk '{printf "%.1f %d\n", $7, $14}' | sort -nk 1 > tasktime.txt
 
 join taskid.txt tasktime.txt > id-time.txt
 
