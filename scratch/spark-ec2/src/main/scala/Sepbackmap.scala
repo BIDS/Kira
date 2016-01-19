@@ -6,9 +6,9 @@ class Sepbackmap(var w: Int, var h: Int, var globalback: Float, var globalrms: F
   sigma = new Array[Float](n)
   dsigma = new Array[Float](n)
 
-  def this() {
+  /*def this() {
     this(0, 0, 0.0F, 0.0F, 0, 0, 0, 0, 0, null, null, null, null)
-  }
+  }*/
 
   def setBack(vback: Array[Float]) {
     back = new Array[Float](vback.length)
@@ -37,4 +37,8 @@ class Sepbackmap(var w: Int, var h: Int, var globalback: Float, var globalrms: F
       dsigma(i) = vdsigma(i)
     }
   }
+}
+
+object Sepbackmap {
+  def apply() = new Sepbackmap(0, 0, 0.0F, 0.0F, 0, 0, 0, 0, 0, null, null, null, null)
 }
