@@ -75,7 +75,7 @@ class Background(matrix: Array[Array[Double]], mask: Array[Array[Boolean]] = nul
   }
 }
 
-object Test {
+/*object Test {
   def backTest() {
     val dim: Int = 6
     var matrix = Array.ofDim[Double](dim, dim)
@@ -327,11 +327,11 @@ object Test {
     println(retmatrix2.map(r => (r.map(x => if (x == true) 1 else 0).reduce(_ + _))).reduce(_ + _))
   }
 
-  def batch_Test(input:String, output:String) {
+  def batch_Test(input: String, output: String) {
     val src = input
     val results = extract(src)
     val writer = new PrintWriter(new File(output))
-    results.map(r => writer.write(r.toString+"\n"))
+    results.map(r => writer.write(r.toString + "\n"))
     writer.close()
   }
 
@@ -380,4 +380,4 @@ object Test {
     mask_ellipseTest()*/
     batch_Test(args(0), args(1))
   }
-}
+}*/ 

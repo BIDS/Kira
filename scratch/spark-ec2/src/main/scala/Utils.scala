@@ -1,7 +1,7 @@
 import java.lang.{ Double => jDouble }
 import java.nio.ByteBuffer
 import java.io._
-import org.eso.fits._
+import nom.tam.fits._
 
 object Utils {
   /**Helper function that converts 2d double matrix to 1d byte stream*/
@@ -36,55 +36,15 @@ object Utils {
     return matrix
   }
 
-  def load(path: String): Array[Array[Double]] = {
-    val file: FitsFile = new FitsFile(path)
-    val hdu: FitsHDUnit = file.getHDUnit(0)
-    val dm: FitsMatrix = hdu.getData().asInstanceOf[FitsMatrix]
-    val naxis: Array[Int] = dm.getNaxis()
-    val ncol = naxis(0)
-    val nval = dm.getNoValues()
-    val nrow = nval / ncol
-
-    // build and populate an array
-    var matrix = Array.ofDim[Float](nrow, ncol)
-    (0 until nrow).map(i => dm.getFloatValues(i * ncol, ncol, matrix(i)))
-
-    println("matrix: height: " + nrow + "\twidth: " + ncol)
-
-    var rmatrix = Array.ofDim[Double](nrow, ncol)
-    for (i <- (0 until nrow)) {
-      for (j <- (0 until ncol)) {
-        rmatrix(i)(j) = matrix(i)(j).toDouble
-      }
-    }
-
-    return rmatrix
-  }
-
   def load_byte(content: Array[Byte]): Array[Array[Double]] = {
     val is = new ByteArrayInputStream(content)
     val dis = new DataInputStream(is)
-    val file = new FitsFile(dis, true)
-    val hdu: FitsHDUnit = file.getHDUnit(0)
-    val dm: FitsMatrix = hdu.getData().asInstanceOf[FitsMatrix]
-    val naxis: Array[Int] = dm.getNaxis()
-    val ncol = naxis(0)
-    val nval = dm.getNoValues()
-    val nrow = nval / ncol
-    println("nrow: " + nrow + "\t ncol:" + ncol)
-    // build and populate an array
-    var matrix = Array.ofDim[Float](nrow, ncol)
-    (0 until nrow).map(i => dm.getFloatValues(i * ncol, ncol, matrix(i)))
+    val file = new Fits(dis)
+    val dm: Array[Array[Float]] = file.getHDU(0).getKernel().asInstanceOf[Array[Array[Float]]]
 
-    println("matrix: height: " + nrow + "\twidth: " + ncol)
+    println("matrix: height: " + dm.size + "\twidth: " + dm(0).size)
 
-    var rmatrix = Array.ofDim[Double](nrow, ncol)
-    for (i <- (0 until nrow)) {
-      for (j <- (0 until ncol)) {
-        rmatrix(i)(j) = matrix(i)(j).toDouble
-      }
-    }
-
+    var rmatrix = dm.map(_.map(_.toDouble))
     return rmatrix
   }
 }

@@ -216,9 +216,9 @@
   <dependencyManagement>
     <dependencies>
       <dependency>
-        <groupId>org.esa</groupId>
-        <artifactId>fits</artifactId>
-        <version>0.94</version>
+        <groupId>gov.nasa.gsfc.heasarc</groupId>
+        <artifactId>nom-tam-fits</artifactId>
+        <version>1.13.1</version>
       </dependency>
       <dependency>
         <groupId>com.esotericsoftware.kryo</groupId>
@@ -320,8 +320,8 @@
 
   <dependencies>
     <dependency>
-      <groupId>org.esa</groupId>
-      <artifactId>fits</artifactId>
+      <groupId>gov.nasa.gsfc.heasarc</groupId>
+      <artifactId>nom-tam-fits</artifactId>
     </dependency>
     <dependency>
       <groupId>org.apache.spark</groupId>
