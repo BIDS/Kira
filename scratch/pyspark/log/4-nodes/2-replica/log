@@ -1,0 +1,111 @@
+             total       used       free     shared    buffers     cached
+Mem:      70201340    1605636   68595704          0       8556     245128
+-/+ buffers/cache:    1351952   68849388
+Swap:      1048572          0    1048572
+             total       used       free     shared    buffers     cached
+Mem:      70201340    1380888   68820452          0        676      38112
+-/+ buffers/cache:    1342100   68859240
+Swap:      1048572          0    1048572
+             total       used       free     shared    buffers     cached
+Mem:      70201340   36369252   33832088          0     122524   33893940
+-/+ buffers/cache:    2352788   67848552
+Swap:      1048572          0    1048572
+             total       used       free     shared    buffers     cached
+Mem:      70201340    1616244   68585096          0     115776      90644
+-/+ buffers/cache:    1409824   68791516
+Swap:      1048572          0    1048572
+             total       used       free     shared    buffers     cached
+Mem:      70201340    1495608   68705732          0       8208     145360
+-/+ buffers/cache:    1342040   68859300
+Swap:      1048572          0    1048572
+             total       used       free     shared    buffers     cached
+Mem:      70201340    1370548   68830792          0        636      37508
+-/+ buffers/cache:    1332404   68868936
+Swap:      1048572          0    1048572
+             total       used       free     shared    buffers     cached
+Mem:      70201340    1491468   68709872          0       8124     144636
+-/+ buffers/cache:    1338708   68862632
+Swap:      1048572          0    1048572
+             total       used       free     shared    buffers     cached
+Mem:      70201340    1376852   68824488          0        652      37884
+-/+ buffers/cache:    1338316   68863024
+Swap:      1048572          0    1048572
+
+real	5m16.139s
+user	0m52.443s
+sys	0m8.033s
+Deleted /user/root/output_18_18
+             total       used       free     shared    buffers     cached
+Mem:      70201340   23217372   46983968          0      61832   21742176
+-/+ buffers/cache:    1413364   68787976
+Swap:      1048572          0    1048572
+             total       used       free     shared    buffers     cached
+Mem:      70201340    1375448   68825892          0       1232      42276
+-/+ buffers/cache:    1331940   68869400
+Swap:      1048572          0    1048572
+             total       used       free     shared    buffers     cached
+Mem:      70201340   25179576   45021764          0     125960   23630668
+-/+ buffers/cache:    1422948   68778392
+Swap:      1048572          0    1048572
+             total       used       free     shared    buffers     cached
+Mem:      70201340    1351252   68850088          0       1224      39936
+-/+ buffers/cache:    1310092   68891248
+Swap:      1048572          0    1048572
+             total       used       free     shared    buffers     cached
+Mem:      70201340   17450536   52750804          0      50960   16021720
+-/+ buffers/cache:    1377856   68823484
+Swap:      1048572          0    1048572
+             total       used       free     shared    buffers     cached
+Mem:      70201340    1358304   68843036          0       1252      42144
+-/+ buffers/cache:    1314908   68886432
+Swap:      1048572          0    1048572
+             total       used       free     shared    buffers     cached
+Mem:      70201340    8514624   61686716          0      31928    7144196
+-/+ buffers/cache:    1338500   68862840
+Swap:      1048572          0    1048572
+             total       used       free     shared    buffers     cached
+Mem:      70201340    1344760   68856580          0       1244      42232
+-/+ buffers/cache:    1301284   68900056
+Swap:      1048572          0    1048572
+
+real	5m5.918s
+user	0m53.583s
+sys	0m7.900s
+Deleted /user/root/output_18_18
+             total       used       free     shared    buffers     cached
+Mem:      70201340   23362888   46838452          0      62872   21908128
+-/+ buffers/cache:    1391888   68809452
+Swap:      1048572          0    1048572
+             total       used       free     shared    buffers     cached
+Mem:      70201340    1348376   68852964          0       2000      42000
+-/+ buffers/cache:    1304376   68896964
+Swap:      1048572          0    1048572
+             total       used       free     shared    buffers     cached
+Mem:      70201340   24855244   45346096          0      66856   23410132
+-/+ buffers/cache:    1378256   68823084
+Swap:      1048572          0    1048572
+             total       used       free     shared    buffers     cached
+Mem:      70201340    1328732   68872608          0       1264      41804
+-/+ buffers/cache:    1285664   68915676
+Swap:      1048572          0    1048572
+             total       used       free     shared    buffers     cached
+Mem:      70201340   17500228   52701112          0      52160   16078544
+-/+ buffers/cache:    1369524   68831816
+Swap:      1048572          0    1048572
+             total       used       free     shared    buffers     cached
+Mem:      70201340    1338784   68862556          0       1216      39580
+-/+ buffers/cache:    1297988   68903352
+Swap:      1048572          0    1048572
+             total       used       free     shared    buffers     cached
+Mem:      70201340    8460916   61740424          0      33952    7100572
+-/+ buffers/cache:    1326392   68874948
+Swap:      1048572          0    1048572
+             total       used       free     shared    buffers     cached
+Mem:      70201340    1318972   68882368          0       1252      38596
+-/+ buffers/cache:    1279124   68922216
+Swap:      1048572          0    1048572
+
+real	5m3.677s
+user	0m52.959s
+sys	0m8.217s
+Deleted /user/root/output_18_18
