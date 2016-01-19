@@ -26,8 +26,8 @@ class Extractor {
 
   /**Macro definition from sepcore.h*/
   val MEMORY_ALLOC_ERROR: Int = 1
-  System.loadLibrary("BackgroundImpl")
-  //System.load("/Users/zhaozhang/projects/scratch/Kira/src/main/scala/libBackgroundImpl.jnilib")
+  //System.loadLibrary("BackgroundImpl")
+  System.load("/Users/zhaozhang/projects/scratch/Kira/src/main/C/libBackgroundImpl.jnilib")
 
   @native
   def sep_sum_circle(data: Array[Byte], err: Array[Byte], mask: Array[Byte],
