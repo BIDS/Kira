@@ -38,9 +38,8 @@ object Utils {
 
   def load_byte(content: Array[Byte]): Array[Array[Double]] = {
     val is = new ByteArrayInputStream(content)
-    val dis = new DataInputStream(is)
-    val file = new Fits(dis)
-    val dm: Array[Array[Float]] = file.getHDU(0).getKernel().asInstanceOf[Array[Array[Float]]]
+    val file = new nom.tam.fits.Fits(is)
+    val dm: Array[Array[Short]] = file.getHDU(0).getKernel().asInstanceOf[Array[Array[Short]]]
 
     println("matrix: height: " + dm.size + "\twidth: " + dm(0).size)
 
