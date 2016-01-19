@@ -1,8 +1,5 @@
 #Compilation instructions on EC2
 
-## Install jfits-0.94 jar
-
-mvn install:install-file -Dfile=libs/jfits-0.94.jar -DgroupId="org.esa" -DartifactId="fits" -Dpackaging="jar" -Dversion="0.94"
 
 ## Compile the SEP library, this step can be skipped now
 
@@ -17,7 +14,7 @@ sr/lib/jvm/java-1.7.0/include/linux" -L"/root/Kira/scratch/spark-ec2/libs" -lsep
 
 ## Compile Kira
 
-mvn clean package
+mvn clean compile assembly:single
 
 ## Update spark-env.sh
 
@@ -41,4 +38,4 @@ mvn clean package
 
 ## Run Kira
 
-bin/kira-submit
+~/projects/spark/spark-1.6.0/bin/spark-submit --class Kira --master local[2] target/Kira-0.0.1-SNAPSHOT-jar-with-dependencies.jar ~/projects/SDSS/data output
