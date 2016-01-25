@@ -29,7 +29,7 @@ if __name__ == "__main__":
   inPath = sys.argv[1]
   outPath = sys.argv[2]
   ssc = StreamingContext(sc, 60)
-  frdd = ssc.binaryFileStream(inPath)
+  frdd = ssc.binaryFileStream(inPath+"/*.fit")
   srdd = frdd.map(lambda x: StringIO.StringIO(x))
   hrdd = srdd.map(lambda x: fits.getdata(x))
 
