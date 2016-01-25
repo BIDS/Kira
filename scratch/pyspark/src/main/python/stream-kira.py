@@ -25,7 +25,7 @@ def extract(data):
   return retstr  
 
 if __name__ == "__main__":
-  sc = SparkContext("local[1]", appName="StreamingSourceExtractor")
+  sc = SparkContext(appName="StreamingSourceExtractor")
   inPath = sys.argv[1]
   outPath = sys.argv[2]
   ssc = StreamingContext(sc, 60)
