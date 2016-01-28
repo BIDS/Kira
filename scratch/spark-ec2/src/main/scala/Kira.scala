@@ -29,7 +29,7 @@ object Kira {
     flatresults.saveAsTextFile(args(1))*/
   }
 
-  def extract_str(content: Array[Byte]): Array[(Int, Double, Double, Double, Double, Double, Double, Double, Short)] = {
+  def extract_str(content: Array[Byte]): Array[(Int, Double, Double, Double, Double, Double, Double, Double, Short)] = synchronized {
     var matrix = Utils.load_byte(content)
     var bkg = new Background(matrix)
     matrix = bkg.subfrom(matrix)
