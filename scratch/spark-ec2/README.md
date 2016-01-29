@@ -9,6 +9,8 @@
 
 ## Compile the JNI library, this step can be skipped now
 
+ln -s /usr/lib/jvm/java-1.7.0/include/linux/jni_md.h /usr/lib/jvm/java-1.7.0/include/jni_md.h
+
 gcc Background.c Extractor.c -std=c99 -o libBackgroundImpl.so -lc -shared -I"/usr/lib/jvm/java-1.7.0/include" -I"/u
 sr/lib/jvm/java-1.7.0/include/linux" -L"/root/Kira/scratch/spark-ec2/libs" -lsep -I"/root/Kira/scratch/spark-ec2/libs/include" -fPIC
 
