@@ -29,8 +29,8 @@ class Background(matrix: Array[Array[Double]], mask: Array[Array[Boolean]] = nul
   /**Macro definition from sepcore.h*/
   val MEMORY_ALLOC_ERROR: Int = 1
 
-  //System.loadLibrary("BackgroundImpl")
-  System.load("/Users/zhaozhang/projects/Kira/scratch/spark-ec2/libs/libBackgroundImpl.jnilib")
+  System.loadLibrary("BackgroundImpl")
+  //System.load("/Users/zhaozhang/projects/Kira/scratch/spark-ec2/libs/libBackgroundImpl.jnilib")
 
   var bkgmap = Sepbackmap()
 
