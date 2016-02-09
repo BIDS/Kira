@@ -35,7 +35,7 @@ if __name__ == "__main__":
   sc = SparkContext(appName="StreamingSourceExtractor")
   inPath = sys.argv[1]
   outPath = sys.argv[2]
-  ssc = StreamingContext(sc, 30)
+  ssc = StreamingContext(sc, 10)
 
   #frdd = ssc.binaryFileStream(inPath)
   #srdd = frdd.map(lambda x: StringIO.StringIO(x))
@@ -45,7 +45,7 @@ if __name__ == "__main__":
   #catalog.saveAsTextFiles(outPath)
 
   srddQueue = []
-  for i in range(1, 12):
+  for i in range(1, 13):
     frdd = sc.binaryFiles(inPath+"/"+str(i))
     srdd = frdd.map(lambda x: StringIO.StringIO(x[1]))
     srddQueue.append(srdd)
