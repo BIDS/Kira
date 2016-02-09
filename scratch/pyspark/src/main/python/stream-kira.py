@@ -24,17 +24,31 @@ def extract(data):
     retstr = retstr+(str(objs['x'][i])+"\t"+str(objs['y'][i])+"\t"+str(flux[i])+"\t"+str(fluxerr[i])+"\t"+str(kr[i])+"\t"+str(eflux[i])+"\t"+str(efluxerr[i])+"\t"+str(flag[i])+"\n")
   return retstr  
 
+def get_output(srdd, outPath):
+  hrdd = srdd.map(lambda x: fits.getdata(x))
+  catalog = hrdd.map(lambda x: extract(x.astype(float)))
+  catalog.saveAsTextFile(outPath)
+
 if __name__ == "__main__":
   sc = SparkContext(appName="StreamingSourceExtractor")
   inPath = sys.argv[1]
   outPath = sys.argv[2]
-  ssc = StreamingContext(sc, 10)
-  frdd = ssc.binaryFileStream(inPath)
-  srdd = frdd.map(lambda x: StringIO.StringIO(x))
-  hrdd = srdd.map(lambda x: fits.getdata(x))
+  ssc = StreamingContext(sc, 300)
 
-  catalog = hrdd.map(lambda x: extract(x.astype(float)))
-  catalog.saveAsTextFiles(outPath)
+  #frdd = ssc.binaryFileStream(inPath)
+  #srdd = frdd.map(lambda x: StringIO.StringIO(x))
+  #hrdd = srdd.map(lambda x: fits.getdata(x))
+
+  #catalog = hrdd.map(lambda x: extract(x.astype(float)))
+  #catalog.saveAsTextFiles(outPath)
+
+  frdd = sc.binaryFiles(inPath+"/1")
+  srdd = frdd.map(lambda x: StringIO.StringIO(x[1]))
+
+  srddQueue = [srdd]
+  in_stream = ssc.queueStream(srddQueue)
+
+  in_stream.foreachRDD(lambda x: get_output(x, outPath))
 
   ssc.start()
   ssc.awaitTermination()
