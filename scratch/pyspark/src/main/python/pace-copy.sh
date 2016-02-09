@@ -12,8 +12,8 @@ while read -r line || [[ -n "$line" ]]; do
        ~/ephemeral-hdfs/bin/hdfs dfs -cp $files /user/root/input_streaming
        stamp2=`date +%s.%N`
        diff=`echo $stamp2 $stamp1 | awk '{print $1-$2}'`
-       echo "copying 50 files take $diff seconds"
-       sleep 30
+       echo "copying 1000 files take $diff seconds"
+       exit
 
        i=0
        files=""

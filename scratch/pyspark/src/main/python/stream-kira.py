@@ -2,6 +2,7 @@ import numpy as np
 import sep
 import sys
 import StringIO
+import time
 
 from astropy.io import fits
 from pyspark import SparkContext
@@ -27,7 +28,8 @@ def extract(data):
 def get_output(srdd, outPath):
   hrdd = srdd.map(lambda x: fits.getdata(x))
   catalog = hrdd.map(lambda x: extract(x.astype(float)))
-  catalog.saveAsTextFile(outPath)
+  t = int(time.time())
+  catalog.saveAsTextFile(outPath+"-"+str(t))
 
 if __name__ == "__main__":
   sc = SparkContext(appName="StreamingSourceExtractor")
@@ -42,12 +44,13 @@ if __name__ == "__main__":
   #catalog = hrdd.map(lambda x: extract(x.astype(float)))
   #catalog.saveAsTextFiles(outPath)
 
-  frdd = sc.binaryFiles(inPath+"/1")
-  srdd = frdd.map(lambda x: StringIO.StringIO(x[1]))
+  srddQueue = []
+  for i in range(1, 12):
+    frdd = sc.binaryFiles(inPath+"/"+str(i))
+    srdd = frdd.map(lambda x: StringIO.StringIO(x[1]))
+    srddQueue.append(srdd)
 
-  srddQueue = [srdd]
   in_stream = ssc.queueStream(srddQueue)
-
   in_stream.foreachRDD(lambda x: get_output(x, outPath))
 
   ssc.start()
