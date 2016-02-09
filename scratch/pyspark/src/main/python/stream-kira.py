@@ -35,7 +35,7 @@ if __name__ == "__main__":
   sc = SparkContext(appName="StreamingSourceExtractor")
   inPath = sys.argv[1]
   outPath = sys.argv[2]
-  ssc = StreamingContext(sc, 300)
+  ssc = StreamingContext(sc, 30)
 
   #frdd = ssc.binaryFileStream(inPath)
   #srdd = frdd.map(lambda x: StringIO.StringIO(x))
